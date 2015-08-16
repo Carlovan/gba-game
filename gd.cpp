@@ -13,6 +13,7 @@
 #include "block1.h"                                                       //block number 1
 #include "palette.h"                                                      //palette
 #include "level.h"
+#include <string.h>
 
 //Aggiunge un blocco al vettore e imposta tutti gli attributi
 void AddBlock(Sprite Blocks[], int index, int type, int row){
@@ -45,10 +46,12 @@ int main(){
   Sprite Blocks[127];             //Vettore per contenere le informazioni dei blocchi
   int BlockTypes[] = {8};         //Posizione in memoria del BMP per ogni tipo di blocco
   int index = 0;                  //Usato per la creazione dei blocchi
+  bool BlocksUsed[127];           //Segna quali posizioni del vettore Blocks possono essere usate (0 se possono essere)
+  memset(BlocksUsed, 0, sizeof(BlocksUsed));
 
   //+ Loop +//
-  int WindowLeft;                 //L'indice della prima colonna intera della matrice visualizzata nello schermo
-  int GridShift = 0;              //Numero di px di cui la griglia si è spostata a sinistra
+  int WindowLeft, OldWindowLeft=0;  //L'indice della prima colonna intera della matrice visualizzata nello schermo
+  int GridShift = 0;                //Numero di px di cui la griglia si è spostata a sinistra
 
 
   //+ ++++++ Inizializzazione ++++++ +//
@@ -78,11 +81,12 @@ int main(){
 
   //+ Blocchi +//
   for(i = 0; i < 10; i++){                    //Scorro le righe della matrice del livello
-    for(j = 0; j < levWidth; j++){            //e le colonne
+    for(j = 0; j < levWidth && j < 16; j++){  //e le colonne ma solo per una schermata
       if(level[i][j] > -1){                   //Se nella cella corrente c'e qualcosa
         tmp = BlockTypes[level[i][j]];
         AddBlock(Blocks, index, tmp, i);      //aggiungo unn blocco cone le giuste caratteristiche
         level[i][j] = index;                  //Imposto nella matrice l'indice nel vettore
+        BlocksUsed[index] = 1;
         index++;
       }
     }
@@ -137,6 +141,22 @@ int main(){
         if(tmp > -1){
           Blocks[tmp].y = 160;
           MoveSprite(Blocks[tmp]);
+          BlocksUsed[tmp] = 0;
+        }
+      }
+    }
+
+    //Carica i nuovi blocchi
+    if(OldWindowLeft != WindowLeft){
+      OldWindowLeft = WindowLeft;
+      for(i = 0; i < 10; i++){
+        tmp = level[i][WindowLeft + 15];
+        if(tmp > -1){
+          tmp = BlockTypes[tmp];
+          for(j = 0; j < 127 && BlocksUsed[j] != 0; j++);                 //Ricerca il primo posto libero nel vettore
+          AddBlock(Blocks, j, tmp, i);
+          level[i][WindowLeft+15] = j;
+          BlocksUsed[j] = 1;
         }
       }
     }
