@@ -102,8 +102,8 @@ int main(){
     CharC = (Character.x + GridShift + Character.w/2) / 16;
 
     tmp = (Character.x>CharC*16?1:-1);          //Controlla le collisioni vericali
-    CharBotColl = ((level[CharR+1][CharC] > -1 || level[CharR+1][CharC+tmp] > -1) && Character.y >= 16 * CharR);
-    CharTopColl = ((level[CharR-1][CharC] > -1 || level[CharR-1][CharC+tmp] > -1) && Character.y <  16 * CharR);
+    CharBotColl = (CharR < 9 && CharC < levWidth && (level[CharR+1][CharC] > -1 || level[CharR+1][CharC+tmp] > -1) && Character.y >= 16 * CharR);
+    CharTopColl = (CharC < levWidth && (level[CharR-1][CharC] > -1 || level[CharR-1][CharC+tmp] > -1) && Character.y <  16 * CharR);
 
     if(CharTopColl){
       VSpeed = 0;
@@ -122,7 +122,7 @@ int main(){
 
     //Calcolo della collisione orizzontale
     tmp = (Character.y > CharR * 16 ? 1 : (Character.y < CharR * 16 ? -1 : 0));
-    CharRightColl = ((level[CharR][CharC+1] > -1 || level[CharR+tmp][CharC+1] > -1) && Character.x + GridShift >= CharC * 16);
+    CharRightColl = (CharC < levWidth && (level[CharR][CharC+1] > -1 || level[CharR+tmp][CharC+1] > -1) && Character.x + GridShift >= CharC * 16);
     MoveSprite(Character);                     //Scrivo le modifiche nella memoria
 
 
