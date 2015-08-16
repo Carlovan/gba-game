@@ -143,6 +143,7 @@ int main(){
           MoveSprite(Blocks[tmp]);
           BlocksUsed[tmp] = 0;
         }
+        level[i][WindowLeft-1] = -1;
       }
     }
 
