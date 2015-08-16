@@ -44,23 +44,23 @@
 //sprite structure definitions
 typedef struct tagOAMEntry
 {
-	u16 attribute0;
-	u16 attribute1;
-	u16 attribute2;
-	u16 attribute3;
+	int attribute0;
+	int attribute1;
+	int attribute2;
+	int attribute3;
 }OAMEntry, *pOAMEntry;
 
 //sprite rotation information (don't worry about this for now)
 typedef struct tagRotData
 {
-	u16 filler1[3];
-	u16 pa;
-	u16 filler2[3];
-	u16 pb;
-	u16 filler3[3];
-	u16 pc;
-	u16 filler4[3];
-	u16 pd;
+	int filler1[3];
+	int pa;
+	int filler2[3];
+	int pb;
+	int filler3[3];
+	int pc;
+	int filler4[3];
+	int pd;
 }RotData, *pRotData;
 
 typedef struct
@@ -76,7 +76,7 @@ typedef struct
 
 
 //create an OAM variable and make it point to the address of OAM
-u16* OAM = (u16*)0x7000000;
+int* OAM = (int*)0x7000000;
 
 //create the array of sprites (128 is the maximum)
 OAMEntry sprites[128];
@@ -84,9 +84,9 @@ OAMEntry sprites[128];
 //Copy our sprite array to OAM
 void CopyOAM()
 {
-	u16 i;
-	u16* temp;
-	temp = (u16*)sprites;
+	int i;
+	int* temp;
+	temp = (int*)sprites;
 	for(i = 0; i < 128*4; i++)
 	{
 		OAM[i] = temp[i];
@@ -96,7 +96,7 @@ void CopyOAM()
 //Set sprites to off screen
 void InitializeSprites()
 {
-	u16 i;
+	int i;
 	for(i = 0; i < 128; i++)
 	{
 		sprites[i].attribute0 = 160;  //y to > 159

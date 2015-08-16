@@ -14,7 +14,7 @@ int main(){
 	char tmp;
 	while((tmp = getc(in)) != EOF) {
 		tot++;
-		if(tmp >= '1' && tmp <= '9'){
+		if(tmp >= '0' && tmp <= '9'){
 			output += tmp;
 			output += ",\t";
 			count++;
@@ -23,16 +23,16 @@ int main(){
 			output += "},\n\t{";
 		}
 		else{
-			output += "0,\t";
+			output += "-1,\t";
 		}
 	}
 	output += "}};\n";
 
-	fprintf(out, "u8 level[][%d] = {\n\t{", tot/10);
+	fprintf(out, "int level[][%d] = {\n\t{", tot/10);
 	fprintf(out, "%s", output.c_str());
 
-	fprintf(out, "\nconst u16 blocksCount = %d;\n", count);
-	fprintf(out, "\nconst u16 levWidth = %d;\n", tot/10);
+	fprintf(out, "\nconst int blocksCount = %d;\n", count);
+	fprintf(out, "\nconst int levWidth = %d;\n", tot/10);
 
 	fclose(in);
 	fclose(out);

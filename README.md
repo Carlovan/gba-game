@@ -1,2 +1,1 @@
-# GBA Geometry
-# gba-game
+# GBA Geometry Dash\n
