@@ -118,7 +118,7 @@ int main(){
       VSpeed = 0;
       Character.y = CharR * 16;
     }else{
-      VSpeed += 0.45;
+      VSpeed += 0.5;
     }
 
     if(CheckPressed(KEY_A) && CharBotColl)
