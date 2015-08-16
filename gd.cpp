@@ -41,6 +41,8 @@ int main(){
   bool CharTopColl = 0;           //Collisione sopra
   bool CharRightColl = 0;         //a destra
   bool CharBotColl = 0;           //e in basso
+  const float GRAVITY = 0.5;      //Valore da aggiungere alla velocita verticale per ogni frame
+  const float JUMP = -7;          //Velocita verticale quando salta
 
   //+ Blocchi +//
   Sprite Blocks[127];             //Vettore per contenere le informazioni dei blocchi
@@ -52,6 +54,8 @@ int main(){
   //+ Loop +//
   int WindowLeft, OldWindowLeft=0;  //L'indice della prima colonna intera della matrice visualizzata nello schermo
   int GridShift = 0;                //Numero di px di cui la griglia si è spostata a sinistra
+  const int SHIFTPF = 2;            //Pixel di cui si sposta la griglia ad ogni frame
+  const int MAXCOL = 16;            //Numero massimo di colonne visibili contemporaneamente
 
 
   //+ ++++++ Inizializzazione ++++++ +//
@@ -81,7 +85,7 @@ int main(){
 
   //+ Blocchi +//
   for(i = 0; i < 10; i++){                    //Scorro le righe della matrice del livello
-    for(j = 0; j < levWidth && j < 16; j++){  //e le colonne ma solo per una schermata
+    for(j = 0; j < levWidth && j <= MAXCOL; j++){  //e le colonne ma solo per una schermata
       if(level[i][j] > -1){                   //Se nella cella corrente c'e qualcosa
         tmp = BlockTypes[level[i][j]];
         AddBlock(Blocks, index, tmp, i);      //aggiungo unn blocco cone le giuste caratteristiche
@@ -118,11 +122,11 @@ int main(){
       VSpeed = 0;
       Character.y = CharR * 16;
     }else{
-      VSpeed += 0.5;
+      VSpeed += GRAVITY;
     }
 
     if(CheckPressed(KEY_A) && CharBotColl)
-      VSpeed = -7;
+      VSpeed = JUMP;
 
     //Calcolo della collisione orizzontale
     tmp = (Character.y > CharR * 16 ? 1 : (Character.y < CharR * 16 ? -1 : 0));
@@ -131,8 +135,8 @@ int main(){
 
 
     //+ Blocchi +//
-    //Arrotondato per eccesso
-    WindowLeft = GridShift / 16 + (GridShift % 16 > 0 ? 1 : 0);
+    //Arrotondato per difetto
+    WindowLeft = GridShift / 16;
 
     //Sposta i blocchi sotto lo schermo se sono usciti dalla visuale
     if(WindowLeft > 0){
@@ -151,29 +155,30 @@ int main(){
     if(OldWindowLeft != WindowLeft){
       OldWindowLeft = WindowLeft;
       for(i = 0; i < 10; i++){
-        tmp = level[i][WindowLeft + 15];
+        tmp = level[i][WindowLeft + MAXCOL];
         if(tmp > -1){
           tmp = BlockTypes[tmp];
           for(j = 0; j < 127 && BlocksUsed[j] != 0; j++);                 //Ricerca il primo posto libero nel vettore
           AddBlock(Blocks, j, tmp, i);
-          level[i][WindowLeft+15] = j;
+          level[i][WindowLeft+MAXCOL] = j;
           BlocksUsed[j] = 1;
         }
       }
     }
 
     //Imposta la posizione dei blocchi sullo schermo
-    for(j = WindowLeft; j < WindowLeft + 16 && j < levWidth; j++){
+    for(j = WindowLeft; j <= WindowLeft + MAXCOL && j < levWidth; j++){
       for(i = 0; i < 10; i++){
         tmp = level[i][j];
         if(tmp > -1){
-          Blocks[tmp].x = 16 * j - GridShift;
+          tmp1 = 16 * j - GridShift;
+          Blocks[tmp].x = (tmp1 >= 0 ? tmp1 : 512+tmp1);
           MoveSprite(Blocks[tmp]);
         }
       }
     }
 
-    GridShift++;
+    GridShift += SHIFTPF;
 
     //+ Disegno +//
     WaitForVsync();
