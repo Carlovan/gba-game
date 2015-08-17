@@ -1,5 +1,4 @@
-.gba
-.sav
-.elf
-.o
-.bat
+*.sav
+*.elf
+*.o
+*.bat

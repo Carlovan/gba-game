@@ -59,7 +59,7 @@ int main(){
   
   background0 = background;               //Secondo background(simulazione di continuità)
   background0.number = 3;                     //è identico al primo se non per dove si trova la sua mappa e la posizione
-  background0.x_scroll = 120+256;
+  background0.x_scroll = 120-256;
   background0.y_scroll = 80;
   
   //+ Personaggio +//
@@ -228,15 +228,15 @@ int main(){
     counter++;
     if(counter%4 == 0)                  //Muove gradualmente il bg
     {
-      background.x_scroll--;
-      background0.x_scroll--;
+      background.x_scroll++;
+      background0.x_scroll++;
     }
     
-    if(background.x_scroll == -136)     //Simula la continuità
-      background.x_scroll = 120+256;
+    if(background.x_scroll == 120+256)     //Simula la continuità
+      background.x_scroll = 120-256;
     
-    if(background0.x_scroll == -136)
-      background0.x_scroll = 120+256;
+    if(background0.x_scroll == 120+256)
+      background0.x_scroll = 120-256;
       
     RotateBackground(&background,angle,120,80,zoom);        //Aggiorna correttamente i valori della struct
     RotateBackground(&background0,angle,120,80,zoom);       //N.B. non serve solo a ruotare, è fondamentale anche per il disegno
