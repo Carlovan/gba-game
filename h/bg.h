@@ -4,9 +4,6 @@
 FIXED angle = 0;
 FIXED zoom = 1<<8;  //lo zoom è un numero a virgola fissa(1<<8 = zoomx1)
 
-FIXED SIN[360];	    //seno e coseno(utilizzati in caso di rotazione bg)
-FIXED COS[360];
-
 //BGCNT defines
 #define BG_MOSAIC_ENABLE		0x40
 #define BG_COLOR_256			0x80
@@ -45,15 +42,6 @@ typedef struct Bg
 	s16 PA,PB,PC,PD;
 }Bg;
 
-void ComputeSinCos()                          //computa seno e coseno per ogni grado intero.
-{
-  int i;                                      // !!!!! OPERAZIONE MOLTO LENTA !!!!! //
-	for(i = 0; i < 360; i++)
-	{
-		SIN[i] = (FIXED)(sin(RADIAN(i)) * 256);
-		COS[i] = (FIXED)(cos(RADIAN(i)) * 256);
-	}
-}
 
 void EnableBackground(Bg* bg)           //inizializza il bg
 {
@@ -148,12 +136,12 @@ void RotateBackground(Bg* bg, int angle,int center_x, int center_y, FIXED zoom) 
 	center_y = (center_y * zoom)>>8;
 	center_x = (center_x * zoom)>>8;
 
-	bg->DX = ((bg->x_scroll<<8)-center_y*SIN[angle]-center_x*COS[angle]);
-	bg->DY = ((bg->y_scroll<<8)-center_y*COS[angle]+center_x*SIN[angle]);
+	bg->DX = ((bg->x_scroll<<8)-center_y*(FIXED)SIN[angle]-center_x*(FIXED)COS[angle]);
+	bg->DY = ((bg->y_scroll<<8)-center_y*(FIXED)COS[angle]+center_x*(FIXED)SIN[angle]);
 
-	bg->PA = (COS[angle]*zoom)>>8;
-	bg->PB = (SIN[angle]*zoom)>>8; 
-	bg->PC = (-SIN[angle]*zoom)>>8;
-	bg->PD = (COS[angle]*zoom)>>8;
+	bg->PA = ((FIXED)COS[angle]*zoom)>>8;
+	bg->PB = ((FIXED)SIN[angle]*zoom)>>8; 
+	bg->PC = ((FIXED)-SIN[angle]*zoom)>>8;
+	bg->PD = ((FIXED)COS[angle]*zoom)>>8;
 }
 #endif

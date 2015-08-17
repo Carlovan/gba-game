@@ -6,20 +6,21 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include <math.h>
-#include "gba.h"                                                          //registri GBA e definizioni generiche
-#include "keypad.h"                                                       //registri dei bottoni
-#include "dispcnt.h"                                                      //define per il REG_DISPCNT
-#include "spr.h"                                                          //funzioni e tipi utili per gestione sprites
-#include "bg.h"                                                           //background useful functions and types
+#include "h/gba.h"                                                          //registri GBA e definizioni generiche
+#include "h/sincos.h"                                                       //Tabella seno e coseno
+#include "h/keypad.h"                                                       //registri dei bottoni
+#include "h/dispcnt.h"                                                      //define per il REG_DISPCNT
+#include "h/spr.h"                                                          //funzioni e tipi utili per gestione sprites
+#include "h/bg.h"                                                           //background useful functions and types
 //Sprites
-#include "character.h"                                                    //character sprite
-#include "block1.h"                                                       //block number 1
-#include "palette.h"                                                      //palette(sprites)
+#include "h/character.h"                                                    //character sprite
+#include "h/block1.h"                                                       //block number 1
+#include "h/palette.h"                                                      //palette(sprites)
 //Backgrounds
-#include "tiles0.h"                                                       //first(last?) set of tiles used
-#include "map.c"                                                          //background map(using tiles0)
+#include "h/tiles0.h"                                                       //first(last?) set of tiles used
+#include "c/map.c"                                                          //background map(using tiles0)
 //Others
-#include "level.h"
+#include "h/level.h"
 #include <string.h>
 
 
@@ -42,9 +43,6 @@ int main(){
   int i, j, k;                    //Indici nei cicli
   int tmp, tmp1, tmp2;            //Usate per valori temporanei nei calcoli
   int counter=0;                  //contatore(utilizzato per bg ma volendo anche ad uso generale)
-
-  //+ Sen e Cos +//
-  ComputeSinCos();                //ELIMINARE LA FUNZIONE(TROPPO LENTA ALL'AVVIO)
   
   //+ Background +//
   Bg background, background0;
