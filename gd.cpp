@@ -5,15 +5,23 @@
 // Date:         14-08-2015                                             //
 //////////////////////////////////////////////////////////////////////////
 
-#include "gba.h"                                                          //GBA register definitions and generic functions
-#include "keypad.h"                                                       //button registers
-#include "dispcnt.h"                                                      //REG_DISPCNT register #defines
-#include "spr.h"                                                          //sprite useful functions and types
+#include <math.h>
+#include "gba.h"                                                          //registri GBA e definizioni generiche
+#include "keypad.h"                                                       //registri dei bottoni
+#include "dispcnt.h"                                                      //define per il REG_DISPCNT
+#include "spr.h"                                                          //funzioni e tipi utili per gestione sprites
+#include "bg.h"                                                           //background useful functions and types
+//Sprites
 #include "character.h"                                                    //character sprite
 #include "block1.h"                                                       //block number 1
-#include "palette.h"                                                      //palette
+#include "palette.h"                                                      //palette(sprites)
+//Backgrounds
+#include "tiles0.h"                                                       //first(last?) set of tiles used
+#include "map.c"                                                          //background map(using tiles0)
+//Others
 #include "level.h"
 #include <string.h>
+
 
 //Aggiunge un blocco al vettore e imposta tutti gli attributi
 void AddBlock(Sprite Blocks[], int index, int type, int row){
@@ -33,7 +41,29 @@ int main(){
   //+ Uso generale +//
   int i, j, k;                    //Indici nei cicli
   int tmp, tmp1, tmp2;            //Usate per valori temporanei nei calcoli
+  int counter=0;                  //contatore(utilizzato per bg ma volendo anche ad uso generale)
 
+  //+ Sen e Cos +//
+  ComputeSinCos();                //ELIMINARE LA FUNZIONE(TROPPO LENTA ALL'AVVIO)
+  
+  //+ Background +//
+  Bg background, background0;
+  
+  background.number = 2;                  //Utilizza il bg n2
+  background.charBaseBlock = 0;           //Specifica il CBB in cui si trova la mappa
+  background.screenBaseBlock = 17;        //Specifica il SBB in cui si trovano i tile
+  background.colorMode = BG_COLOR_256;    //Colore del bg(b-bit)
+  background.size = ROTBG_SIZE_256x256;   //Dimensione del bg
+  background.x_scroll = 120;              //Posizione orizzontale di partenza
+  background.y_scroll = 80;               //Posizione verticale di partenza
+  background.mosaic = 0;                  //Mosaic mode(va bhe)
+  background.wraparound = 0;              //Wraparound(solo Text bg?)
+  
+  background0 = background;               //Secondo background(simulazione di continuità)
+  background0.number = 3;                     //è identico al primo se non per dove si trova la sua mappa e la posizione
+  background0.x_scroll = 120+256;
+  background0.y_scroll = 80;
+  
   //+ Personaggio +//
   Sprite Character;               //L'oggetto per gestire il personaggio
   float VSpeed = 0;               //Velocita verticale (px/sec)
@@ -59,13 +89,29 @@ int main(){
 
 
   //+ ++++++ Inizializzazione ++++++ +//
-  SetMode(MODE_1 | OBJ_ENABLE | OBJ_MAP_1D);    //Imposta le modalità di utilizzo
+  SetMode(MODE_2 | OBJ_ENABLE | OBJ_MAP_1D);    //Imposta le modalità di utilizzo
   InitializeSprites();                          //Inizializza gli sprite
 
   for(i = 0; i < 256; i++)                      //Carica in memoria la pallette degli sprites
     OBJPaletteMem[i] = palette[i];
 
-
+  //+ ++++++ Disposizione Background ++++++ +//
+  EnableBackground(&background);
+  EnableBackground(&background0);
+  
+  for(i = 0; i < 256; i++)                               //Palette del bg
+    BGPaletteMem[i] = tiles0Palette[i];
+    
+  for(i = 0; i < tiles0_WIDTH*tiles0_HEIGHT /2; i++)     //Dati dei tile
+  {
+    background.tileData[i] = tiles0Data[i];
+    background0.tileData[i] = tiles0Data[i];
+  }
+  
+  u16* temp = (u16*) map;
+  for(i = 0; i < map_WIDTH*map_HEIGHT /2; i++)           //Mappa della disposizione dei tile
+    background.mapData[i] = temp[i];  
+    
   //+ ++++++ Creazione Sprites ++++++ +//
   //+ Personaggio +//
   Character.x = 100;                           //Imposta le caratteristiche dell'oggetto
@@ -180,10 +226,29 @@ int main(){
 
     GridShift += SHIFTPF;
 
+    //Gestione movimento background
+    counter++;
+    if(counter%4 == 0)                  //Muove gradualmente il bg
+    {
+      background.x_scroll--;
+      background0.x_scroll--;
+    }
+    
+    if(background.x_scroll == -136)     //Simula la continuità
+      background.x_scroll = 120+256;
+    
+    if(background0.x_scroll == -136)
+      background0.x_scroll = 120+256;
+      
+    RotateBackground(&background,angle,120,80,zoom);        //Aggiorna correttamente i valori della struct
+    RotateBackground(&background0,angle,120,80,zoom);       //N.B. non serve solo a ruotare, è fondamentale anche per il disegno
+    
     //+ Disegno +//
     WaitForVsync();
+    UpdateBackground(&background);
+    UpdateBackground(&background0);
     CopyOAM();
-
+    
     if(GridShift > 16 * levWidth || CharR >= 10 || CharRightColl)
       break;
   }

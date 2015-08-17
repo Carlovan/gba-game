@@ -24,6 +24,9 @@ u16* VideoBuffer 	=(u16*)0x6000000;
 u16* OAMData		=(u16*)0x6010000;
 u16* BGPaletteMem 	=(u16*)0x5000000;
 u16* OBJPaletteMem 	=(u16*)0x5000200;
+#define FIXED s32
+#define PI 3.14159
+#define RADIAN(n)       (((float)n)/(float)180*PI)
 
 #define REG_INTERUPT   *(u32*)0x3007FFC
 #define REG_DISPCNT    *(u32*)0x4000000
