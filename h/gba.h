@@ -183,10 +183,7 @@ u16* OBJPaletteMem 	=(u16*)0x5000200;
 #define REG_WSCNT      *(u16*)0x4000204
 #define REG_IME        *(u16*)0x4000208
 #define REG_PAUSE      *(u16*)0x4000300
-#define REG_DMA        ((volatile DMA_REC*)0x040000B0)
-#define REG_DMA3SAD    *((volatile u32*)0x040000D4)
-#define REG_DMA3DAD    *((volatile u32*)0x040000D8)
-#define REG_DMA3CNT    *((volatile u32*)0x040000DC)
+
 
 //wait for the screen to stop drawing
 void WaitForVsync()
@@ -194,7 +191,11 @@ void WaitForVsync()
 	while((volatile u16)REG_VCOUNT != 160);
 }
 
-//To use the DMAs
+//+ ++++++ DMA ++++++ +\\
+
+#define REG_DMA3SAD    *((volatile u32*)0x040000D4)
+#define REG_DMA3DAD    *((volatile u32*)0x040000D8)
+#define REG_DMA3CNT    *((volatile u32*)0x040000DC)
 
 #define DMA_32 ((u32)(1<<26))
 #define DMA_ENABLE ((u32)(1<<31))
@@ -205,5 +206,39 @@ INLINE void DMA_copy(const void* source, void* dest, u32 count, u32 mode){
 	REG_DMA3DAD = (u32)dest;
 	REG_DMA3CNT = count | mode;
 }
+
+//+ ++++++ TIMERS ++++++ +\\
+
+#define REG_TM0D     *((volatile u16*)0x04000100)
+#define REG_TM0CNT   *((volatile u16*)0x04000102)
+#define REG_TM1D     *((volatile u16*)0x04000104)
+#define REG_TM1CNT   *((volatile u16*)0x04000106)
+#define REG_TM2D     *((volatile u16*)0x04000108)
+#define REG_TM2CNT   *((volatile u16*)0x0400010A)
+#define REG_TM3D     *((volatile u16*)0x0400010C)
+#define REG_TM3CNT   *((volatile u16*)0x0400010F)
+#define TM_FREQ_1     0
+#define TM_FREQ_64    1
+#define TM_FREQ_256   2
+#define TM_FREQ_1024  3
+#define TM_CASCADE    4
+#define TM_IRQ        64
+#define TM_ENABLE     128
+
+
+//Mette in pausa il programma per ms 1024esimi di secondo
+void sleep(int ms){
+	int counter = 0;
+	int prev = 0;
+	REG_TM0D = 0;
+	REG_TM0CNT = TM_FREQ_1024 | TM_ENABLE;
+	while(counter < (ms<<4)){
+		while(REG_TM0D == prev);
+		counter++;
+		prev = REG_TM0D;
+	}
+}
+
+
 
 #endif
