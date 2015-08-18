@@ -69,7 +69,7 @@ typedef struct
 	s16 y;
 	s16 w;
 	s16 h;
-	s16 spriteFrame[3];     //animation frame storage
+	s16 spriteFrame[16];     //animation frame storage
 	int activeFrame;        //which frame is active
 	s16 index;       //which sprite referring to
 }Sprite;
