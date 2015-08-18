@@ -84,6 +84,7 @@ int main(){
   int GridShift = 0;                //Numero di px di cui la griglia si è spostata a sinistra
   const int SHIFTPF = 2;            //Pixel di cui si sposta la griglia ad ogni frame
   const int MAXCOL = 16;            //Numero massimo di colonne visibili contemporaneamente
+  bool first = true;                //True se è la prima iterazione del main loop
 
 
   //+ ++++++ Inizializzazione ++++++ +//
@@ -256,6 +257,11 @@ int main(){
         }
       }
       break;
+    }
+
+    if(first){
+      first = 0;
+      sleep(3072);
     }
   }
 
