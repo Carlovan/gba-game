@@ -91,6 +91,7 @@ void CopyOAM()
 	{
 		OAM[i] = temp[i];
 	}
+	DMA_copy(temp, OAM, 128*4, DMA_ENABLE);
 }
 
 //Set sprites to off screen

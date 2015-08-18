@@ -27,6 +27,7 @@ u16* OBJPaletteMem 	=(u16*)0x5000200;
 #define FIXED s32
 #define PI 3.14159
 #define RADIAN(n)       (((float)n)/(float)180*PI)
+#define INLINE static inline
 
 #define REG_INTERUPT   *(u32*)0x3007FFC
 #define REG_DISPCNT    *(u32*)0x4000000
@@ -182,11 +183,27 @@ u16* OBJPaletteMem 	=(u16*)0x5000200;
 #define REG_WSCNT      *(u16*)0x4000204
 #define REG_IME        *(u16*)0x4000208
 #define REG_PAUSE      *(u16*)0x4000300
+#define REG_DMA        ((volatile DMA_REC*)0x040000B0)
+#define REG_DMA3SAD    *((volatile u32*)0x040000D4)
+#define REG_DMA3DAD    *((volatile u32*)0x040000D8)
+#define REG_DMA3CNT    *((volatile u32*)0x040000DC)
 
 //wait for the screen to stop drawing
 void WaitForVsync()
 {
 	while((volatile u16)REG_VCOUNT != 160);
+}
+
+//To use the DMAs
+
+#define DMA_32 ((u32)(1<<26))
+#define DMA_ENABLE ((u32)(1<<31))
+
+INLINE void DMA_copy(const void* source, void* dest, u32 count, u32 mode){
+	REG_DMA3CNT = 0;
+	REG_DMA3SAD = (u32)source;
+	REG_DMA3DAD = (u32)dest;
+	REG_DMA3CNT = count | mode;
 }
 
 #endif

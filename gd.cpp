@@ -90,26 +90,20 @@ int main(){
   SetMode(MODE_2 | OBJ_ENABLE | OBJ_MAP_1D);    //Imposta le modalità di utilizzo
   InitializeSprites();                          //Inizializza gli sprite
 
-  for(i = 0; i < 256; i++)                      //Carica in memoria la pallette degli sprites
-    OBJPaletteMem[i] = palette[i];
+  DMA_copy(palette, OBJPaletteMem, 256, DMA_ENABLE);  //Carica in memoria la palette degli sprites usando il DMA
 
   //+ ++++++ Disposizione Background ++++++ +//
   EnableBackground(&background);
   EnableBackground(&background0);
-  
-  for(i = 0; i < 256; i++)                               //Palette del bg
-    BGPaletteMem[i] = tiles0Palette[i];
-    
-  for(i = 0; i < tiles0_WIDTH*tiles0_HEIGHT /2; i++)     //Dati dei tile
-  {
-    background.tileData[i] = tiles0Data[i];
-    background0.tileData[i] = tiles0Data[i];
-  }
+
+  DMA_copy(tiles0Palette, BGPaletteMem, 256, DMA_ENABLE);       //Carica la palette dei background
+
+  DMA_copy(tiles0Data, background.tileData, tiles0_WIDTH*tiles0_HEIGHT/2, DMA_ENABLE);
+  DMA_copy(tiles0Data, background0.tileData, tiles0_WIDTH*tiles0_HEIGHT/2, DMA_ENABLE);
   
   u16* temp = (u16*) map;
-  for(i = 0; i < map_WIDTH*map_HEIGHT /2; i++)           //Mappa della disposizione dei tile
-    background.mapData[i] = temp[i];  
-    
+  DMA_copy(temp, background.mapData, map_WIDTH*map_HEIGHT/2, DMA_ENABLE);   //Mappa della disposizione dei tiles
+
   //+ ++++++ Creazione Sprites ++++++ +//
   //+ Personaggio +//
   Character.x = 100;                           //Imposta le caratteristiche dell'oggetto
@@ -124,8 +118,7 @@ int main(){
   sprites[tmp].attribute2 = 0;
 
   tmp1 = Character.w * Character.h / 2;       //Dimensione del BMP in memoria
-  for(i = 0; i < tmp1; i++)                   //Carica l'immagine in memoria
-    OAMData[i] = characterData[i];
+  DMA_copy(characterData, OAMData, tmp1, DMA_ENABLE);   //Carica l'immagine in memoria
 
   //+ Blocchi +//
   for(i = 0; i < 10; i++){                    //Scorro le righe della matrice del livello
@@ -141,9 +134,7 @@ int main(){
   }
 
   tmp2 = block1_WIDTH * block1_HEIGHT / 2;     //Dimensione in memoria dell'immagine
-  for(i = 0; i < tmp2; i++)                   //Carico l'immagine in memoria
-    OAMData[tmp1 + i] = block1Data[i];
-
+  DMA_copy(block1Data, &OAMData[tmp1], tmp2, DMA_ENABLE); //Carica l'immagine in memoria
 
   //+ ++++++ Loop principale ++++++ +//
   while(true){

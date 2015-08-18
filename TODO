@@ -4,3 +4,5 @@ Menu per selezionare il livello.
 Piu blocchi.
 Esplosione quando si perde.
 Rotazione al salto.
+Caricamento palette e immagini con DMA.
+Sostituire i float con i fixed-point.
