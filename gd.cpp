@@ -64,13 +64,13 @@ int main(){
   
   //+ Personaggio +//
   Sprite Character;               //L'oggetto per gestire il personaggio
-  float VSpeed = 0;               //Velocita verticale (px/sec)
   int CharC, CharR;               //Colonna e riga del personaggio nella matrice del livello
   bool CharTopColl = 0;           //Collisione sopra
   bool CharRightColl = 0;         //a destra
   bool CharBotColl = 0;           //e in basso
-  const float GRAVITY = 0.5;      //Valore da aggiungere alla velocita verticale per ogni frame
-  const float JUMP = -7;          //Velocita verticale quando salta
+  FIXED VSpeed = 0;               //Velocita verticale (px/sec). Fixed-point: fattore 2^16 (0X100 = 1)
+  const FIXED GRAVITY = 0x80;     //Valore da aggiungere alla velocita verticale per ogni frame
+  const FIXED JUMP = -0x700;      //Velocita verticale quando salta
 
   //+ Blocchi +//
   Sprite Blocks[127];             //Vettore per contenere le informazioni dei blocchi
@@ -142,7 +142,7 @@ int main(){
   //+ ++++++ Loop principale ++++++ +//
   while(true){
     //+ Personaggio +//
-    Character.y += (int)VSpeed;                 //Aggiorno la coordinata verticale
+    Character.y += (VSpeed >= 0 ? (VSpeed>>8) : -((-VSpeed)>>8));                 //Aggiorno la coordinata verticale
 
     CharR = (Character.y + Character.h/2) / 16; //Riga e colonne nella matrice
     CharC = (Character.x + GridShift + Character.w/2) / 16;
