@@ -40,7 +40,7 @@ void AddBlock(Sprite Blocks[], int index, int type, int row){
 int main(){
   //+ ++++++ Variabili ++++++ +//
   //+ Uso generale +//
-  int i, j, k;                    //Indici nei cicli
+  int i, j, k, ii;                    //Indici nei cicli
   int tmp, tmp1, tmp2;            //Usate per valori temporanei nei calcoli
   int counter=0;                  //contatore(utilizzato per bg ma volendo anche ad uso generale)
   
@@ -74,7 +74,7 @@ int main(){
 
   //+ Blocchi +//
   Sprite Blocks[127];             //Vettore per contenere le informazioni dei blocchi
-  int BlockTypes[] = {8};         //Posizione in memoria del BMP per ogni tipo di blocco
+  int BlockTypes[] = {32};        //Posizione in memoria del BMP per ogni tipo di blocco
   int index = 0;                  //Usato per la creazione dei blocchi
   bool BlocksUsed[127];           //Segna quali posizioni del vettore Blocks possono essere usate (0 se possono essere)
   memset(BlocksUsed, 0, sizeof(BlocksUsed));
@@ -109,15 +109,18 @@ int main(){
   Character.x = 100;                           //Imposta le caratteristiche dell'oggetto
   Character.y = 60;
   Character.w = character_WIDTH;
-  Character.h = character_HEIGHT;
+  Character.h = character_HEIGHT/4;
   Character.index = 127;
+  Character.activeFrame = 0;
+  for(i = 0; i < 4; i++)                       //Imposta la posizione dei frame dell'animazione
+    Character.spriteFrame[i] = i*8;
 
   tmp = Character.index;                      //Imposta attributi dello sprite nella memoria
   sprites[tmp].attribute0 = COLOR_256 | SQUARE | Character.y;
   sprites[tmp].attribute1 = SIZE_16 | Character.x;
   sprites[tmp].attribute2 = 0;
 
-  tmp1 = Character.w * Character.h / 2;       //Dimensione del BMP in memoria
+  tmp1 = character_WIDTH * character_HEIGHT / 2;       //Dimensione del BMP in memoria
   DMA_copy(characterData, OAMData, tmp1, DMA_ENABLE);   //Carica l'immagine in memoria
 
   //+ Blocchi +//
@@ -238,8 +241,22 @@ int main(){
     UpdateBackground(&background0);
     CopyOAM();
     
-    if(GridShift > 16 * levWidth || CharR >= 10 || CharRightColl)
+    if(GridShift > 16 * levWidth || CharR >= 10)
       break;
+    if(CharRightColl)
+    {
+      for(i = 0; i<150; i++)
+      {
+        WaitForVsync();
+        if(i % 50 == 0)
+        {
+          Character.activeFrame++;
+          sprites[Character.index].attribute2 = Character.spriteFrame[Character.activeFrame];
+          CopyOAM();
+        }
+      }
+      break;
+    }
   }
 
   while(true);
