@@ -87,10 +87,6 @@ void CopyOAM()
 	u16 i;
 	u16* temp;
 	temp = (u16*)sprites;
-	for(i = 0; i < 128*4; i++)
-	{
-		OAM[i] = temp[i];
-	}
 	DMA_copy(temp, OAM, 128*4, DMA_ENABLE);
 }
 

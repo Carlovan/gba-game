@@ -224,16 +224,18 @@ int main(){
       break;
     if(CharRightColl)
     {
-      for(i = 0; i<150; i++)
+      for(i = 0; i<3; i++)
       {
+        Character.activeFrame++;
+        sprites[Character.index].attribute2 = Character.spriteFrame[Character.activeFrame];
+        sleep(51);
         WaitForVsync();
-        if(i % 50 == 0)
-        {
-          Character.activeFrame++;
-          sprites[Character.index].attribute2 = Character.spriteFrame[Character.activeFrame];
-          CopyOAM();
-        }
+        CopyOAM();
       }
+      sleep(51);
+      Character.x = 250;
+      MoveSprite(Character);
+      CopyOAM();
       break;
     }
 
@@ -242,6 +244,8 @@ int main(){
       sleep(3072);
     }
   }
+
+
 
   while(true);
   return 0;
