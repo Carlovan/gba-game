@@ -45,22 +45,13 @@ int main(){
   int counter=0;                  //contatore(utilizzato per bg ma volendo anche ad uso generale)
   
   //+ Background +//
-  Bg background, background0;
-  
-  background.number = 2;                  //Utilizza il bg n2
-  background.charBaseBlock = 0;           //Specifica il CBB in cui si trova la mappa
-  background.screenBaseBlock = 17;        //Specifica il SBB in cui si trovano i tile
-  background.colorMode = BG_COLOR_256;    //Colore del bg(b-bit)
-  background.size = ROTBG_SIZE_256x256;   //Dimensione del bg
-  background.x_scroll = 120;              //Posizione orizzontale di partenza
-  background.y_scroll = 80;               //Posizione verticale di partenza
-  background.mosaic = 0;                  //Mosaic mode(va bhe)
-  background.wraparound = 0;              //Wraparound(solo Text bg?)
-  
-  background0 = background;               //Secondo background(simulazione di continuità)
-  background0.number = 3;                     //è identico al primo se non per dove si trova la sua mappa e la posizione
-  background0.x_scroll = 120-256;
-  background0.y_scroll = 80;
+  Bg background;
+
+  background.number = 0;
+  background.charBaseBlock = 0;
+  background.screenBaseBlock = 17;
+  background.colorMode = BG_COLOR_256;
+  background.size = TEXTBG_SIZE_256x256;
   
   //+ Personaggio +//
   Sprite Character;               //L'oggetto per gestire il personaggio
@@ -88,22 +79,17 @@ int main(){
 
 
   //+ ++++++ Inizializzazione ++++++ +//
-  SetMode(MODE_2 | OBJ_ENABLE | OBJ_MAP_1D);    //Imposta le modalità di utilizzo
+  SetMode(MODE_1 | OBJ_ENABLE | OBJ_MAP_1D);    //Imposta le modalità di utilizzo
   InitializeSprites();                          //Inizializza gli sprite
 
   DMA_copy(palette, OBJPaletteMem, 256, DMA_ENABLE);  //Carica in memoria la palette degli sprites usando il DMA
 
   //+ ++++++ Disposizione Background ++++++ +//
   EnableBackground(&background);
-  EnableBackground(&background0);
 
   DMA_copy(tiles0Palette, BGPaletteMem, 256, DMA_ENABLE);       //Carica la palette dei background
-
   DMA_copy(tiles0Data, background.tileData, tiles0_WIDTH*tiles0_HEIGHT/2, DMA_ENABLE);
-  DMA_copy(tiles0Data, background0.tileData, tiles0_WIDTH*tiles0_HEIGHT/2, DMA_ENABLE);
-  
-  u16* temp = (u16*) map;
-  DMA_copy(temp, background.mapData, map_WIDTH*map_HEIGHT/2, DMA_ENABLE);   //Mappa della disposizione dei tiles
+  DMA_copy(map, background.mapData, 1024, DMA_ENABLE);   //Mappa della disposizione dei tiles
 
   //+ ++++++ Creazione Sprites ++++++ +//
   //+ Personaggio +//
@@ -224,22 +210,14 @@ int main(){
     if(counter%4 == 0)                  //Muove gradualmente il bg
     {
       background.x_scroll++;
-      background0.x_scroll++;
     }
     
-    if(background.x_scroll == 120+256)     //Simula la continuità
-      background.x_scroll = 120-256;
-    
-    if(background0.x_scroll == 120+256)
-      background0.x_scroll = 120-256;
-      
-    RotateBackground(&background,angle,120,80,zoom);        //Aggiorna correttamente i valori della struct
-    RotateBackground(&background0,angle,120,80,zoom);       //N.B. non serve solo a ruotare, è fondamentale anche per il disegno
-    
+    if(background.x_scroll >= 256)
+      background.x_scroll = 256;
+
     //+ Disegno +//
     WaitForVsync();
     UpdateBackground(&background);
-    UpdateBackground(&background0);
     CopyOAM();
     
     if(GridShift > 16 * levWidth || CharR >= 10)
