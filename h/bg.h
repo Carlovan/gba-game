@@ -31,6 +31,7 @@ typedef struct Bg
 	Bg(){
 		mosaic = colorMode = number = size = charBaseBlock = screenBaseBlock = 0;
 		wraparound = x_scroll = y_scroll = DX = DY = PA = PB = PC = PD = 0;
+		priority = 3;
 	}
 	u16* tileData;
 	u16* mapData;
@@ -44,6 +45,7 @@ typedef struct Bg
 	s16 x_scroll,y_scroll;
 	s32 DX,DY;
 	s16 PA,PB,PC,PD;
+	u16 priority;
 }Bg;
 
 
@@ -91,12 +93,18 @@ void UpdateBackground(Bg* bg)
 	case 0:
 		REG_BG0HOFS = bg->x_scroll;
 		REG_BG0VOFS = bg->y_scroll;
+		REG_BG0CNT &= ~((u16)3);
+		REG_BG0CNT |= (bg->priority & 3);
 		break;
 	case 1:
 		REG_BG1HOFS = bg->x_scroll;
 		REG_BG1VOFS = bg->y_scroll;
+		REG_BG1CNT &= ~((u16)3);
+		REG_BG1CNT |= (bg->priority & 3);
 		break;
 	case 2:
+		REG_BG2CNT &= ~((u16)3);
+		REG_BG2CNT |= (bg->priority & 3);
 		if(!(REG_DISPCNT & MODE_0))//se è un rotational bg...
 		{
 			REG_BG2X = bg->DX;
@@ -114,6 +122,8 @@ void UpdateBackground(Bg* bg)
 		}
 		break;
 	case 3:
+		REG_BG3CNT &= ~((u16)3);
+		REG_BG3CNT |= (bg->priority & 3);
 		if(!(REG_DISPCNT & MODE_0))//se è un rotational bg...
 		{
 			REG_BG3X = bg->DX;

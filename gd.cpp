@@ -19,6 +19,10 @@
 //Backgrounds
 #include "h/tiles0.h"                                                       //first(last?) set of tiles used
 #include "c/map.c"                                                          //background map(using tiles0)
+#include "c/ready_map.c"
+#include "c/go_map.c"
+#include "c/you_lose_map.c"
+#include "c/you_win_map.c"
 //Others
 #include "h/level.h"
 #include <string.h>
@@ -34,7 +38,7 @@ void AddBlock(Sprite Blocks[], int index, int type, int row){
 
   sprites[index].attribute0 = COLOR_256 | SQUARE | Blocks[index].y;
   sprites[index].attribute1 = SIZE_16 | Blocks[index].x;
-  sprites[index].attribute2 = type;
+  sprites[index].attribute2 = type | PRIORITY(1);
 }
 
 int main(){
@@ -49,10 +53,19 @@ int main(){
 
   background.number = 0;
   background.charBaseBlock = 0;
-  background.screenBaseBlock = 17;
+  background.screenBaseBlock = 31;
   background.colorMode = BG_COLOR_256;
   background.size = TEXTBG_SIZE_256x256;
-  
+
+  Bg text;
+
+  text.number = 1;
+  text.charBaseBlock = 0;
+  text.screenBaseBlock = 30;
+  text.colorMode = BG_COLOR_256;
+  text.size = TEXTBG_SIZE_256x256;
+  text.priority = 0;
+
   //+ Personaggio +//
   Sprite Character;               //L'oggetto per gestire il personaggio
   int CharC, CharR;               //Colonna e riga del personaggio nella matrice del livello
@@ -76,20 +89,23 @@ int main(){
   const int SHIFTPF = 2;            //Pixel di cui si sposta la griglia ad ogni frame
   const int MAXCOL = 16;            //Numero massimo di colonne visibili contemporaneamente
   bool first = true;                //True se è la prima iterazione del main loop
+  bool you_win = 0;
 
 
   //+ ++++++ Inizializzazione ++++++ +//
-  SetMode(MODE_1 | OBJ_ENABLE | OBJ_MAP_1D);    //Imposta le modalità di utilizzo
+  SetMode(MODE_0 | OBJ_ENABLE | OBJ_MAP_1D);    //Imposta le modalità di utilizzo
   InitializeSprites();                          //Inizializza gli sprite
 
   DMA_copy(palette, OBJPaletteMem, 256, DMA_ENABLE);  //Carica in memoria la palette degli sprites usando il DMA
 
   //+ ++++++ Disposizione Background ++++++ +//
   EnableBackground(&background);
+  EnableBackground(&text);
 
   DMA_copy(tiles0Palette, BGPaletteMem, 256, DMA_ENABLE);       //Carica la palette dei background
   DMA_copy(tiles0Data, background.tileData, tiles0_WIDTH*tiles0_HEIGHT/2, DMA_ENABLE);
   DMA_copy(map, background.mapData, 1024, DMA_ENABLE);   //Mappa della disposizione dei tiles
+  DMA_copy(ready_map, text.mapData, 1024, DMA_ENABLE);
 
   //+ ++++++ Creazione Sprites ++++++ +//
   //+ Personaggio +//
@@ -105,7 +121,7 @@ int main(){
   tmp = Character.index;                      //Imposta attributi dello sprite nella memoria
   sprites[tmp].attribute0 = COLOR_256 | SQUARE | Character.y;
   sprites[tmp].attribute1 = SIZE_16 | Character.x;
-  sprites[tmp].attribute2 = 0;
+  sprites[tmp].attribute2 = 0 | PRIORITY(1);
 
   tmp1 = character_WIDTH * character_HEIGHT / 2;       //Dimensione del BMP in memoria
   DMA_copy(characterData, OAMData, tmp1, DMA_ENABLE);   //Carica l'immagine in memoria
@@ -218,10 +234,13 @@ int main(){
     //+ Disegno +//
     WaitForVsync();
     UpdateBackground(&background);
+    UpdateBackground(&text);
     CopyOAM();
     
-    if(GridShift > 16 * levWidth || CharR >= 10)
+    if(CharC > levWidth || CharR >= 10){
+      you_win = 1;
       break;
+    }
     if(CharRightColl)
     {
       for(i = 0; i<3; i++)
@@ -241,11 +260,29 @@ int main(){
 
     if(first){
       first = 0;
-      sleep(3072);
+      for(i=0; i < 2; i++){
+        sleep(512);
+        text.priority = 3;
+        WaitForVsync();
+        UpdateBackground(&text);
+        sleep(512);
+        text.priority = 0;
+        WaitForVsync();
+        UpdateBackground(&text);
+      }
+      WaitForVsync();
+      DMA_copy(go_map, text.mapData, 1024, DMA_ENABLE);
+      sleep(720);
+      text.priority = 3;
+      WaitForVsync();
+      UpdateBackground(&text);
     }
   }
 
-
+  WaitForVsync();
+  DMA_copy((you_win?you_win_map:you_lose_map), text.mapData, 1024, DMA_ENABLE);
+  text.priority = 0;
+  UpdateBackground(&text);
 
   while(true);
   return 0;
