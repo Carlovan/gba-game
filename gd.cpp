@@ -14,7 +14,7 @@
 #include "h/bg.h"                                                           //background useful functions and types
 //Sprites
 #include "h/character.h"                                                    //character sprite
-#include "h/block1.h"                                                       //block number 1
+#include "h/blocks.h"                                                       //block number 1
 #include "h/palette.h"                                                      //palette(sprites)
 //Backgrounds
 #include "h/tiles0.h"                                                       //first(last?) set of tiles used
@@ -94,7 +94,7 @@ int main(){
 
   DMA_copy(tiles0Palette, BGPaletteMem, 256, DMA_ENABLE);       //Carica la palette dei background
   DMA_copy(tiles0Data, background.tileData, tiles0_WIDTH*tiles0_HEIGHT/2, DMA_ENABLE);
-  DMA_copy(block1Data, level.tileData, block1_WIDTH*block1_HEIGHT/2, DMA_ENABLE);
+  DMA_copy(blocksData, level.tileData, blocks_WIDTH*blocks_HEIGHT/2, DMA_ENABLE);
   DMA_copy(map, background.mapData, 1024, DMA_ENABLE);   //Mappa della disposizione dei tiles
   DMA_copy(ready_map, text.mapData, 1024, DMA_ENABLE);
 
@@ -115,28 +115,30 @@ int main(){
   sprites[tmp].attribute2 = 0 | PRIORITY(1);
 
   tmp1 = character_WIDTH * character_HEIGHT / 2;       //Dimensione del BMP in memoria
-  DMA_copy(characterData, OAMData, tmp1, DMA_ENABLE);   //Carica l'immagine in memoria
+  DMA_copy(characterData, OAMData, tmp1, DMA_ENABLE);  //Carica l'immagine in memoria
 
   //+ Livello +//
-  s16 level0tmp[32*32];
-  for(j = 0; j<32; j+=2)
+  int blockTypes[][4] = {{0x02,0x03,0x04,0x05,},};     //Matrice dei tile dei blocchi
+  
+  s16 level0tmp[32*32];                   //Mappa dei tile temporanea
+  for(j = 0; j<32; j+=2)                  //Scorro la matrice del livello
   {
     for(i = 0; i<20; i+=2)
     {
-      if(level0[i/2][j/2]==-1)
-      {
-        level0tmp[j+i*32] = 0x05;
-        level0tmp[j+i*32+1] = 0x05;
-        level0tmp[j+(1+i)*32] = 0x05;
-        level0tmp[j+(1+i)*32+1] = 0x05;
-        
-      }
-      if(level0[i/2][j/2]== 0)
+      if(level0[i/2][j/2]==-1)            //Se trovo -1(spazio vuoto) sovrascrivo con un tile vuoto
       {
         level0tmp[j+i*32] = 0x00;
-        level0tmp[j+i*32+1] = 0x01;
-        level0tmp[j+(1+i)*32] = 0x02;
-        level0tmp[j+(1+i)*32+1] = 0x03;
+        level0tmp[j+i*32+1] = 0x00;
+        level0tmp[j+(1+i)*32] = 0x00;
+        level0tmp[j+(1+i)*32+1] = 0x00;
+        
+      }
+      else                                //Altrimenti attingo alla matrice dei blocchi
+      {
+        level0tmp[j+i*32] = blockTypes[level0[i/2][j/2]][0];
+        level0tmp[j+i*32+1] = blockTypes[level0[i/2][j/2]][1];
+        level0tmp[j+(1+i)*32] = blockTypes[level0[i/2][j/2]][2];
+        level0tmp[j+(1+i)*32+1] = blockTypes[level0[i/2][j/2]][3];
         
       }
     }
@@ -179,29 +181,29 @@ int main(){
     //+ Livello +//
     GridShift += 2;
     level.x_scroll=GridShift;
-    if(GridShift%16 == 0)
+    if(GridShift%16 == 0)                           //Se una fila di blocchi è uscita dallo schermo
     {
       
-      for(i = 0;i<20;i+=2)
+      for(i = 0;i<20;i+=2)                          //La sovrascrivo con una nuova
       {
         if(level0[i/2][15+GridShift/16]==-1)
         {
-          level0tmp[levelcounter+i*32] = 0x05;
-          level0tmp[levelcounter+i*32+1] = 0x05;
-          level0tmp[levelcounter+(1+i)*32] = 0x05;
-          level0tmp[levelcounter+(1+i)*32+1] = 0x05;
+          level0tmp[levelcounter+i*32] = 0x00;
+          level0tmp[levelcounter+i*32+1] = 0x00;
+          level0tmp[levelcounter+(1+i)*32] = 0x00;
+          level0tmp[levelcounter+(1+i)*32+1] = 0x00;
           
         }
-        if(level0[i/2][15+GridShift/16]== 0)
+        else
         {
-          level0tmp[levelcounter+i*32] = 0x00;
-          level0tmp[levelcounter+i*32+1] = 0x01;
-          level0tmp[levelcounter+(1+i)*32] = 0x02;
-          level0tmp[levelcounter+(1+i)*32+1] = 0x03;
+          level0tmp[levelcounter+i*32] = blockTypes[level0[i/2][15+GridShift/16]][0];
+          level0tmp[levelcounter+i*32+1] = blockTypes[level0[i/2][15+GridShift/16]][1];
+          level0tmp[levelcounter+(1+i)*32] = blockTypes[level0[i/2][15+GridShift/16]][2];
+          level0tmp[levelcounter+(1+i)*32+1] = blockTypes[level0[i/2][15+GridShift/16]][3];
           
         }
       }
-      levelcounter+=2;
+      levelcounter+=2;                      //Determina quale colonna della mappa è effettivamente uscita dallo schermo
       if(levelcounter>=32)
         levelcounter = 0;
     }
