@@ -28,25 +28,14 @@
 #include <string.h>
 
 
-//Aggiunge un blocco al vettore e imposta tutti gli attributi
-void AddBlock(Sprite Blocks[], int index, int type, int row){
-  Blocks[index].x = 240;          //Posizionato a destra furoi dallo schermo
-  Blocks[index].y = 16 * row;     //La sua coordinata verticale
-  Blocks[index].w = block1_WIDTH;
-  Blocks[index].h = block1_HEIGHT;
-  Blocks[index].index = index;
-
-  sprites[index].attribute0 = COLOR_256 | SQUARE | Blocks[index].y;
-  sprites[index].attribute1 = SIZE_16 | Blocks[index].x;
-  sprites[index].attribute2 = type | PRIORITY(1);
-}
 
 int main(){
   //+ ++++++ Variabili ++++++ +//
   //+ Uso generale +//
-  int i, j, k, ii;                    //Indici nei cicli
+  int i, j, k, ii;                //Indici nei cicli
   int tmp, tmp1, tmp2;            //Usate per valori temporanei nei calcoli
   int counter=0;                  //contatore(utilizzato per bg ma volendo anche ad uso generale)
+  int levelcounter = 0;           //contatore(utilizzato nello scorrimento del livello)
   
   //+ Background +//
   Bg background;
@@ -56,6 +45,7 @@ int main(){
   background.screenBaseBlock = 31;
   background.colorMode = BG_COLOR_256;
   background.size = TEXTBG_SIZE_256x256;
+  background.priority = 3;
 
   Bg text;
 
@@ -65,6 +55,15 @@ int main(){
   text.colorMode = BG_COLOR_256;
   text.size = TEXTBG_SIZE_256x256;
   text.priority = 0;
+  
+  Bg level;
+  
+  level.number = 2;
+  level.charBaseBlock = 1;
+  level.screenBaseBlock = 29;
+  level.colorMode = BG_COLOR_256;
+  level.size = TEXTBG_SIZE_256x256;
+  level.priority = 2;
 
   //+ Personaggio +//
   Sprite Character;               //L'oggetto per gestire il personaggio
@@ -76,20 +75,10 @@ int main(){
   const FIXED GRAVITY = 0x80;     //Valore da aggiungere alla velocita verticale per ogni frame
   const FIXED JUMP = -0x700;      //Velocita verticale quando salta
 
-  //+ Blocchi +//
-  Sprite Blocks[127];             //Vettore per contenere le informazioni dei blocchi
-  int BlockTypes[] = {32};        //Posizione in memoria del BMP per ogni tipo di blocco
-  int index = 0;                  //Usato per la creazione dei blocchi
-  bool BlocksUsed[127];           //Segna quali posizioni del vettore Blocks possono essere usate (0 se possono essere)
-  memset(BlocksUsed, 0, sizeof(BlocksUsed));
-
   //+ Loop +//
-  int WindowLeft, OldWindowLeft=0;  //L'indice della prima colonna intera della matrice visualizzata nello schermo
-  int GridShift = 0;                //Numero di px di cui la griglia si è spostata a sinistra
-  const int SHIFTPF = 2;            //Pixel di cui si sposta la griglia ad ogni frame
-  const int MAXCOL = 16;            //Numero massimo di colonne visibili contemporaneamente
   bool first = true;                //True se è la prima iterazione del main loop
   bool you_win = 0;
+  int GridShift = 0;
 
 
   //+ ++++++ Inizializzazione ++++++ +//
@@ -101,9 +90,11 @@ int main(){
   //+ ++++++ Disposizione Background ++++++ +//
   EnableBackground(&background);
   EnableBackground(&text);
+  EnableBackground(&level);
 
   DMA_copy(tiles0Palette, BGPaletteMem, 256, DMA_ENABLE);       //Carica la palette dei background
   DMA_copy(tiles0Data, background.tileData, tiles0_WIDTH*tiles0_HEIGHT/2, DMA_ENABLE);
+  DMA_copy(block1Data, level.tileData, block1_WIDTH*block1_HEIGHT/2, DMA_ENABLE);
   DMA_copy(map, background.mapData, 1024, DMA_ENABLE);   //Mappa della disposizione dei tiles
   DMA_copy(ready_map, text.mapData, 1024, DMA_ENABLE);
 
@@ -126,21 +117,31 @@ int main(){
   tmp1 = character_WIDTH * character_HEIGHT / 2;       //Dimensione del BMP in memoria
   DMA_copy(characterData, OAMData, tmp1, DMA_ENABLE);   //Carica l'immagine in memoria
 
-  //+ Blocchi +//
-  for(i = 0; i < 10; i++){                    //Scorro le righe della matrice del livello
-    for(j = 0; j < levWidth && j <= MAXCOL; j++){  //e le colonne ma solo per una schermata
-      if(level[i][j] > -1){                   //Se nella cella corrente c'e qualcosa
-        tmp = BlockTypes[level[i][j]];
-        AddBlock(Blocks, index, tmp, i);      //aggiungo unn blocco cone le giuste caratteristiche
-        level[i][j] = index;                  //Imposto nella matrice l'indice nel vettore
-        BlocksUsed[index] = 1;
-        index++;
+  //+ Livello +//
+  s16 level0tmp[32*32];
+  for(j = 0; j<32; j+=2)
+  {
+    for(i = 0; i<20; i+=2)
+    {
+      if(level0[i/2][j/2]==-1)
+      {
+        level0tmp[j+i*32] = 0x05;
+        level0tmp[j+i*32+1] = 0x05;
+        level0tmp[j+(1+i)*32] = 0x05;
+        level0tmp[j+(1+i)*32+1] = 0x05;
+        
+      }
+      if(level0[i/2][j/2]== 0)
+      {
+        level0tmp[j+i*32] = 0x00;
+        level0tmp[j+i*32+1] = 0x01;
+        level0tmp[j+(1+i)*32] = 0x02;
+        level0tmp[j+(1+i)*32+1] = 0x03;
+        
       }
     }
   }
-
-  tmp2 = block1_WIDTH * block1_HEIGHT / 2;     //Dimensione in memoria dell'immagine
-  DMA_copy(block1Data, &OAMData[tmp1], tmp2, DMA_ENABLE); //Carica l'immagine in memoria
+  DMA_copy(level0tmp,level.mapData,1024,DMA_ENABLE);            //Aggiorno la mappa del livello
 
   //+ ++++++ Loop principale ++++++ +//
   while(true){
@@ -151,8 +152,8 @@ int main(){
     CharC = (Character.x + GridShift + Character.w/2) / 16;
 
     tmp = (Character.x>CharC*16?1:-1);          //Controlla le collisioni vericali
-    CharBotColl = (CharR < 9 && CharC < levWidth && (level[CharR+1][CharC] > -1 || level[CharR+1][CharC+tmp] > -1) && Character.y >= 16 * CharR);
-    CharTopColl = (CharC < levWidth && (level[CharR-1][CharC] > -1 || level[CharR-1][CharC+tmp] > -1) && Character.y <  16 * CharR);
+    CharBotColl = (CharR < 9 && CharC < lev0Width && (level0[CharR+1][CharC] > -1 || level0[CharR+1][CharC+tmp] > -1) && Character.y >= 16 * CharR);
+    CharTopColl = (CharC < lev0Width && (level0[CharR-1][CharC] > -1 || level0[CharR-1][CharC+tmp] > -1) && Character.y <  16 * CharR);
 
     if(CharTopColl){
       VSpeed = 0;
@@ -171,56 +172,40 @@ int main(){
 
     //Calcolo della collisione orizzontale
     tmp = (Character.y > CharR * 16 ? 1 : (Character.y < CharR * 16 ? -1 : 0));
-    CharRightColl = (CharC < levWidth && (level[CharR][CharC+1] > -1 || level[CharR+tmp][CharC+1] > -1) && Character.x + GridShift >= CharC * 16);
+    CharRightColl = (CharC < lev0Width && (level0[CharR][CharC+1] > -1 || level0[CharR+tmp][CharC+1] > -1) && Character.x + GridShift >= CharC * 16);
     MoveSprite(Character);                     //Scrivo le modifiche nella memoria
 
 
-    //+ Blocchi +//
-    //Arrotondato per difetto
-    WindowLeft = GridShift / 16;
-
-    //Sposta i blocchi sotto lo schermo se sono usciti dalla visuale
-    if(WindowLeft > 0){
-      for(i = 0; i < 10; i++){
-        tmp = level[i][WindowLeft-1];         //Quello che c'e nella cella corrente
-        if(tmp > -1){
-          Blocks[tmp].y = 160;
-          MoveSprite(Blocks[tmp]);
-          BlocksUsed[tmp] = 0;
+    //+ Livello +//
+    GridShift += 2;
+    level.x_scroll=GridShift;
+    if(GridShift%16 == 0)
+    {
+      
+      for(i = 0;i<20;i+=2)
+      {
+        if(level0[i/2][15+GridShift/16]==-1)
+        {
+          level0tmp[levelcounter+i*32] = 0x05;
+          level0tmp[levelcounter+i*32+1] = 0x05;
+          level0tmp[levelcounter+(1+i)*32] = 0x05;
+          level0tmp[levelcounter+(1+i)*32+1] = 0x05;
+          
         }
-        level[i][WindowLeft-1] = -1;
-      }
-    }
-
-    //Carica i nuovi blocchi
-    if(OldWindowLeft != WindowLeft){
-      OldWindowLeft = WindowLeft;
-      for(i = 0; i < 10; i++){
-        tmp = level[i][WindowLeft + MAXCOL];
-        if(tmp > -1){
-          tmp = BlockTypes[tmp];
-          for(j = 0; j < 127 && BlocksUsed[j] != 0; j++);                 //Ricerca il primo posto libero nel vettore
-          AddBlock(Blocks, j, tmp, i);
-          level[i][WindowLeft+MAXCOL] = j;
-          BlocksUsed[j] = 1;
+        if(level0[i/2][15+GridShift/16]== 0)
+        {
+          level0tmp[levelcounter+i*32] = 0x00;
+          level0tmp[levelcounter+i*32+1] = 0x01;
+          level0tmp[levelcounter+(1+i)*32] = 0x02;
+          level0tmp[levelcounter+(1+i)*32+1] = 0x03;
+          
         }
       }
+      levelcounter+=2;
+      if(levelcounter>=32)
+        levelcounter = 0;
     }
-
-    //Imposta la posizione dei blocchi sullo schermo
-    for(j = WindowLeft; j <= WindowLeft + MAXCOL && j < levWidth; j++){
-      for(i = 0; i < 10; i++){
-        tmp = level[i][j];
-        if(tmp > -1){
-          tmp1 = 16 * j - GridShift;
-          Blocks[tmp].x = (tmp1 >= 0 ? tmp1 : 512+tmp1);
-          MoveSprite(Blocks[tmp]);
-        }
-      }
-    }
-
-    GridShift += SHIFTPF;
-
+    
     //Gestione movimento background
     counter++;
     if(counter%4 == 0)                  //Muove gradualmente il bg
@@ -233,11 +218,13 @@ int main(){
 
     //+ Disegno +//
     WaitForVsync();
+    UpdateBackground(&level);
     UpdateBackground(&background);
     UpdateBackground(&text);
+    DMA_copy(level0tmp,level.mapData,1024,DMA_ENABLE);
     CopyOAM();
     
-    if(CharC > levWidth || CharR >= 10){
+    if(CharC > lev0Width || CharR >= 10){
       you_win = 1;
       break;
     }

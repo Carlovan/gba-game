@@ -105,7 +105,7 @@ void UpdateBackground(Bg* bg)
 	case 2:
 		REG_BG2CNT &= ~((u16)3);
 		REG_BG2CNT |= (bg->priority & 3);
-		if(!(REG_DISPCNT & MODE_0))//se è un rotational bg...
+		if((REG_DISPCNT & MODE_0))//se è un rotational bg...
 		{
 			REG_BG2X = bg->DX;
 			REG_BG2Y = bg->DY;
@@ -124,7 +124,7 @@ void UpdateBackground(Bg* bg)
 	case 3:
 		REG_BG3CNT &= ~((u16)3);
 		REG_BG3CNT |= (bg->priority & 3);
-		if(!(REG_DISPCNT & MODE_0))//se è un rotational bg...
+		if((REG_DISPCNT & MODE_0))//se è un rotational bg...
 		{
 			REG_BG3X = bg->DX;
 			REG_BG3Y = bg->DY;
