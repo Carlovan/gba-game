@@ -30,7 +30,8 @@ typedef struct Bg
 {
 	Bg(){
 		mosaic = colorMode = number = size = charBaseBlock = screenBaseBlock = 0;
-		wraparound = x_scroll = y_scroll = DX = DY = PA = PB = PC = PD = 0;
+		wraparound = x_scroll = y_scroll = DX = DY = PB = PD = 0;
+		PA = PC = 1;
 		priority = 3;
 	}
 	u16* tileData;
@@ -91,21 +92,25 @@ void UpdateBackground(Bg* bg)
 	switch(bg->number)
 	{
 	case 0:
-		REG_BG0HOFS = bg->x_scroll;
-		REG_BG0VOFS = bg->y_scroll;
-		REG_BG0CNT &= ~((u16)3);
-		REG_BG0CNT |= (bg->priority & 3);
+		if((REG_DISPCNT & 7) == MODE_0 || (REG_DISPCNT & 7) == MODE_1){
+			REG_BG0HOFS = bg->x_scroll;
+			REG_BG0VOFS = bg->y_scroll;
+			REG_BG0CNT &= ~((u16)3);
+			REG_BG0CNT |= (bg->priority & 3);
+		}
 		break;
 	case 1:
-		REG_BG1HOFS = bg->x_scroll;
-		REG_BG1VOFS = bg->y_scroll;
-		REG_BG1CNT &= ~((u16)3);
-		REG_BG1CNT |= (bg->priority & 3);
+		if((REG_DISPCNT & 7) == MODE_0 || (REG_DISPCNT & 7) == MODE_1){
+			REG_BG1HOFS = bg->x_scroll;
+			REG_BG1VOFS = bg->y_scroll;
+			REG_BG1CNT &= ~((u16)3);
+			REG_BG1CNT |= (bg->priority & 3);
+		}
 		break;
 	case 2:
 		REG_BG2CNT &= ~((u16)3);
 		REG_BG2CNT |= (bg->priority & 3);
-		if((REG_DISPCNT & MODE_0))//se è un rotational bg...
+		if((REG_DISPCNT & 7) == MODE_1 || (REG_DISPCNT & 7) == MODE_2)//se è un rotational bg...
 		{
 			REG_BG2X = bg->DX;
 			REG_BG2Y = bg->DY;
@@ -124,7 +129,7 @@ void UpdateBackground(Bg* bg)
 	case 3:
 		REG_BG3CNT &= ~((u16)3);
 		REG_BG3CNT |= (bg->priority & 3);
-		if((REG_DISPCNT & MODE_0))//se è un rotational bg...
+		if((REG_DISPCNT & 7) == MODE_2)//se è un rotational bg...
 		{
 			REG_BG3X = bg->DX;
 			REG_BG3Y = bg->DY;
@@ -134,7 +139,7 @@ void UpdateBackground(Bg* bg)
 			REG_BG3PC = bg->PC;
 			REG_BG3PD = bg->PD;
 		}
-		else //altrimenti è un text bg...
+		else if((REG_DISPCNT & 7) == MODE_0)//altrimenti è un text bg...
 		{
 			REG_BG3HOFS = bg->x_scroll;
 			REG_BG3VOFS = bg->y_scroll;
@@ -143,7 +148,7 @@ void UpdateBackground(Bg* bg)
 	default: break;
 	}
 }
-/*
+
 void RotateBackground(Bg* bg, int angle,int center_x, int center_y, FIXED zoom)   //Applica modifiche al bg per poi essere updatato
 {
 
@@ -157,5 +162,5 @@ void RotateBackground(Bg* bg, int angle,int center_x, int center_y, FIXED zoom) 
 	bg->PB = ((FIXED)SIN[angle]*zoom)>>8; 
 	bg->PC = ((FIXED)-SIN[angle]*zoom)>>8;
 	bg->PD = ((FIXED)COS[angle]*zoom)>>8;
-}*/
+}
 #endif
