@@ -108,9 +108,9 @@ void MoveSprite(Sprite sp, int x_offset=0, int y_offset=0)
 {
 	int tx, ty;
 	tx = sp.x + x_offset;
-	if(tx < 0) tx += SCREEN_WIDTH;
+	if(tx < 0) tx += 512;
 	ty = sp.y + y_offset;
-	if(ty < 0) ty += SCREEN_HEIGHT;
+	if(ty < 0) ty += 256;
 	sprites[sp.index].attribute1 = sprites[sp.index].attribute1 & 0xFE00;  //clear the old x value
 	sprites[sp.index].attribute1 = sprites[sp.index].attribute1 | tx;
 
@@ -133,6 +133,3 @@ void RotateSprite(int rotDataIndex, s32 angle, s32 x_scale,s32 y_scale)
 }
 
 #endif
-
-
-
