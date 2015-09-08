@@ -27,7 +27,7 @@ LDFLAGS := $(ARCH) $(SPECS)
 
 # --- Build -----------------------------------------------------------
 # Build process starts here!
-build: $(TARGET).gba
+build: $(TARGET).gba 
 
 # Strip and fix header (step 3,4)
 $(TARGET).gba : $(TARGET).elf
@@ -39,7 +39,7 @@ $(TARGET).elf : $(OBJS)
 	$(LD) $^ $(LDFLAGS) -o $@
 
 # Compile (step 1)
-$(OBJS) : %.o : %.cpp
+$(OBJS) : %.o : %.cpp $(wildcard h/*)
 	$(CC) -c $< $(CFLAGS) -o $@
 		
 # --- Clean -----------------------------------------------------------

@@ -71,9 +71,11 @@ int main(){
   bool CharTopColl = 0;           //Collisione sopra
   bool CharRightColl = 0;         //a destra
   bool CharBotColl = 0;           //e in basso
+  int CharRotation = 0;
   FIXED VSpeed = 0;               //Velocita verticale (px/sec). Fixed-point: fattore 2^16 (0X100 = 1)
-  const FIXED GRAVITY = 0x80;     //Valore da aggiungere alla velocita verticale per ogni frame
-  const FIXED JUMP = -0x700;      //Velocita verticale quando salta
+  const FIXED GRAVITY = 0x50;     //Valore da aggiungere alla velocita verticale per ogni frame
+  const FIXED JUMP = -0x600;      //Velocita verticale quando salta
+  const int ROT_ANGLE = 3;
 
   //+ Loop +//
   bool first = true;                //True se è la prima iterazione del main loop
@@ -106,13 +108,15 @@ int main(){
   Character.h = character_HEIGHT/4;
   Character.index = 127;
   Character.activeFrame = 0;
+  Character.rotData = 0;
   for(i = 0; i < 4; i++)                       //Imposta la posizione dei frame dell'animazione
     Character.spriteFrame[i] = i*8;
 
   tmp = Character.index;                      //Imposta attributi dello sprite nella memoria
-  sprites[tmp].attribute0 = COLOR_256 | SQUARE | Character.y;
-  sprites[tmp].attribute1 = SIZE_16 | Character.x;
+  sprites[tmp].attribute0 = COLOR_256 | SQUARE | Character.y | ROTATION_FLAG | SIZE_DOUBLE;
+  sprites[tmp].attribute1 = SIZE_16 | Character.x | ROTDATA(Character.rotData);
   sprites[tmp].attribute2 = 0 | PRIORITY(1);
+  RotateSprite(Character.rotData, 0, 1, 1);
 
   tmp1 = character_WIDTH * character_HEIGHT / 2;       //Dimensione del BMP in memoria
   DMA_copy(characterData, OAMData, tmp1, DMA_ENABLE);  //Carica l'immagine in memoria
@@ -149,6 +153,8 @@ int main(){
   while(true){
     //+ Personaggio +//
     Character.y += (VSpeed >= 0 ? (VSpeed>>8) : -((-VSpeed)>>8));                 //Aggiorno la coordinata verticale
+    CharRotation += ROT_ANGLE;
+    if(CharRotation >= 360) CharRotation -= 360;
 
     CharR = (Character.y + Character.h/2) / 16; //Riga e colonne nella matrice
     CharC = (Character.x + GridShift + Character.w/2) / 16;
@@ -156,6 +162,15 @@ int main(){
     tmp = (Character.x>CharC*16?1:-1);          //Controlla le collisioni vericali
     CharBotColl = (CharR < 9 && CharC < lev0Width && (level0[CharR+1][CharC] > -1 || level0[CharR+1][CharC+tmp] > -1) && Character.y >= 16 * CharR);
     CharTopColl = (CharC < lev0Width && (level0[CharR-1][CharC] > -1 || level0[CharR-1][CharC+tmp] > -1) && Character.y <  16 * CharR);
+
+    if(CharTopColl || CharBotColl){
+      for(tmp = CharRotation; tmp >= 90; tmp -= 90);
+      if(tmp < 45)
+        CharRotation -= tmp;
+      else
+        CharRotation += 90-tmp;
+    }
+    RotateSprite(Character.rotData, CharRotation, 1, 1);
 
     if(CharTopColl){
       VSpeed = 0;
@@ -175,7 +190,7 @@ int main(){
     //Calcolo della collisione orizzontale
     tmp = (Character.y > CharR * 16 ? 1 : (Character.y < CharR * 16 ? -1 : 0));
     CharRightColl = (CharC < lev0Width && (level0[CharR][CharC+1] > -1 || level0[CharR+tmp][CharC+1] > -1) && Character.x + GridShift >= CharC * 16);
-    MoveSprite(Character);                     //Scrivo le modifiche nella memoria
+    MoveSprite(Character , -Character.w/2, -Character.h/2);                     //Scrivo le modifiche nella memoria
 
 
     //+ Livello +//
@@ -242,7 +257,7 @@ int main(){
       }
       sleep(51);
       Character.x = 250;
-      MoveSprite(Character);
+      MoveSprite(Character, -Character.w/2, -Character.h/2);
       CopyOAM();
       break;
     }

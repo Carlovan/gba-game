@@ -54,13 +54,13 @@ typedef struct tagOAMEntry
 typedef struct tagRotData
 {
 	u16 filler1[3];
-	u16 pa;
+	s16 pa;
 	u16 filler2[3];
-	u16 pb;
+	s16 pb;
 	u16 filler3[3];
-	u16 pc;
+	s16 pc;
 	u16 filler4[3];
-	u16 pd;
+	s16 pd;
 }RotData, *pRotData;
 
 typedef struct
@@ -72,6 +72,7 @@ typedef struct
 	s16 spriteFrame[16];     //animation frame storage
 	int activeFrame;        //which frame is active
 	s16 index;       //which sprite referring to
+	int rotData;
 }Sprite;
 
 
@@ -80,6 +81,7 @@ u16* OAM = (u16*)0x7000000;
 
 //create the array of sprites (128 is the maximum)
 OAMEntry sprites[128];
+pRotData rotData = (pRotData)sprites;
 
 //Copy our sprite array to OAM
 void CopyOAM()
@@ -102,13 +104,32 @@ void InitializeSprites()
 }
 
 //move the sprite
-void MoveSprite(Sprite sp)
+void MoveSprite(Sprite sp, int x_offset=0, int y_offset=0)
 {
+	int tx, ty;
+	tx = sp.x + x_offset;
+	if(tx < 0) tx += SCREEN_WIDTH;
+	ty = sp.y + y_offset;
+	if(ty < 0) ty += SCREEN_HEIGHT;
 	sprites[sp.index].attribute1 = sprites[sp.index].attribute1 & 0xFE00;  //clear the old x value
-	sprites[sp.index].attribute1 = sprites[sp.index].attribute1 | sp.x;
+	sprites[sp.index].attribute1 = sprites[sp.index].attribute1 | tx;
 
 	sprites[sp.index].attribute0 = sprites[sp.index].attribute0 & 0xFF00;  //clear the old y value
-	sprites[sp.index].attribute0 = sprites[sp.index].attribute0 | sp.y;
+	sprites[sp.index].attribute0 = sprites[sp.index].attribute0 | ty;
+}
+
+void RotateSprite(int rotDataIndex, s32 angle, s32 x_scale,s32 y_scale)
+{
+	s32 pa,pb,pc,pd;
+	pa = (((1<<8)/x_scale) * COS[angle])>>8;
+	pb = (((1<<8)/y_scale) * SIN[angle])>>8;
+	pc = (((1<<8)/x_scale) * -SIN[angle])>>8;
+	pd = (((1<<8)/y_scale) * COS[angle])>>8;
+
+	rotData[rotDataIndex].pa = pa;
+	rotData[rotDataIndex].pb = pb;
+	rotData[rotDataIndex].pc = pc;
+	rotData[rotDataIndex].pd = pd;
 }
 
 #endif
