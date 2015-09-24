@@ -85,7 +85,7 @@ int main(){
 
   //+ ++++++ Inizializzazione ++++++ +//
   SetMode(MODE_0 | OBJ_ENABLE | OBJ_MAP_1D);    //Imposta le modalità di utilizzo
-  InitializeSprites();                          //Inizializza gli sprite
+  InitializeSprites();
 
   DMA_copy(palette, OBJPaletteMem, 256, DMA_ENABLE);  //Carica in memoria la palette degli sprites usando il DMA
 

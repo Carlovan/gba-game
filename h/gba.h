@@ -1,33 +1,37 @@
 //////////////////////////////////////////////////////////////////////////
-// File: 	gba.h                                             	//
-// Description: Contains all the GBA register definitions	 	//
-// Author:	Eloist						  	//
-// Date: 	9th January 2002                                      	//
+// File:        gba.h                                                   //
+// Description: Contains all the GBA register definitions               //
+// Author:      Eloist                                                  //
+// Date:        9th January 2002                                        //
 //////////////////////////////////////////////////////////////////////////
 #ifndef GBA_HEADER
 #define GBA_HEADER
 
-typedef unsigned char 	u8;
-typedef unsigned short 	u16;
-typedef unsigned long 	u32;
+typedef unsigned char      u8;
+typedef unsigned short     u16;
+typedef unsigned long      u32;
+typedef unsigned long long u64;
 
-typedef signed char 	s8;
-typedef signed short 	s16;
-typedef signed long 	s32;
+typedef signed char        s8;
+typedef signed short       s16;
+typedef signed long        s32;
+typedef signed long long   s64;
 
-typedef unsigned char 	byte;
-typedef unsigned short 	hword;
-typedef unsigned long 	word;
+typedef unsigned char      byte;
+typedef unsigned short     hword;
+typedef unsigned long      word;
 
-u32* OAMmem  		=(u32*)0x7000000;
-u16* VideoBuffer 	=(u16*)0x6000000;
-u16* OAMData		=(u16*)0x6010000;
-u16* BGPaletteMem 	=(u16*)0x5000000;
-u16* OBJPaletteMem 	=(u16*)0x5000200;
-#define FIXED s32
-#define PI 3.14159
-#define RADIAN(n)       (((float)n)/(float)180*PI)
-#define INLINE static inline
+extern u32* OAMmem;
+extern u16* VideoBuffer;
+extern u16* OAMData;
+extern u16* BGPaletteMem;
+extern u16* OBJPaletteMem;
+
+#define FIXED          s32
+#define INLINE         inline
+
+#define SCREEN_WIDTH   240
+#define SCREEN_HEIGHT  160
 
 #define REG_INTERUPT   *(u32*)0x3007FFC
 #define REG_DISPCNT    *(u32*)0x4000000
@@ -165,8 +169,8 @@ u16* OBJPaletteMem 	=(u16*)0x5000200;
 #define REG_SCCNT      *(u32*)0x4000128
 #define REG_SCCNT_L    *(u16*)0x4000128
 #define REG_SCCNT_H    *(u16*)0x400012A
-#define REG_P1         *(u16*)0x4000130
-#define REG_P1CNT      *(u16*)0x4000132
+#define REG_KEY        *(u16*)0x4000130
+#define REG_KEYCNT     *(u16*)0x4000132
 #define REG_R          *(u16*)0x4000134
 #define REG_HS_CTRL    *(u16*)0x4000140
 #define REG_JOYRE      *(u32*)0x4000150
@@ -184,26 +188,8 @@ u16* OBJPaletteMem 	=(u16*)0x5000200;
 #define REG_IME        *(u16*)0x4000208
 #define REG_PAUSE      *(u16*)0x4000300
 
-
-//wait for the screen to stop drawing
-void WaitForVsync()
-{
-	while((volatile u16)REG_VCOUNT != 160);
-}
-
-//+ ++++++ DMA ++++++ +\\
-
 #define DMA_32 ((u32)(1<<26))
 #define DMA_ENABLE ((u32)(1<<31))
-
-INLINE void DMA_copy(const void* source, void* dest, u32 count, u32 mode){
-	REG_DM3CNT = 0;
-	REG_DM3SAD = (u32)source;
-	REG_DM3DAD = (u32)dest;
-	REG_DM3CNT = count | mode;
-}
-
-//+ ++++++ TIMERS ++++++ +\\
 
 #define TM_FREQ_1     0x0
 #define TM_FREQ_64    0x1
@@ -213,44 +199,9 @@ INLINE void DMA_copy(const void* source, void* dest, u32 count, u32 mode){
 #define TM_IRQ        0x40
 #define TM_ENABLE     0x80
 
-
-//Mette in pausa il programma per ms 1024esimi di secondo
-void sleep(int ms){
-	int counter = 0;
-	int prev = 0;
-	REG_TM0D = 0;
-	REG_TM0CNT = TM_FREQ_1024 | TM_ENABLE;
-	while(counter < (ms<<4)){
-		while(REG_TM0D == prev);
-		counter++;
-		prev = REG_TM0D;
-	}
-}
-
-
-
-int abs(int a){
-	return (a<0?-a:a);
-}
-
-//Generatore casuale
-int __qran_seed = 42;
-
-// Funzione di seeding
-int sqran(int seed){
-	int old = __qran_seed;
-	__qran_seed = seed;
-	return old;
-}
-
-INLINE int qran(){
-	__qran_seed = 1664525 * __qran_seed + 1013904223;
-	return (__qran_seed>>16) & 0x7FFF;
-}
-
-INLINE int qran_range(int min, int max){
-	return abs((qran() * (min-max)>>15)+min);
-}
-
+INLINE void WaitForVsync();
+void DMA_copy(const void*, void*, u32, u32);
+void sleep(int);
+int abs(int);
 
 #endif
