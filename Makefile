@@ -1,33 +1,35 @@
-BINPATH = /home/giulio/Programmazione/GBA/SDK/devkitARM/bin
-
+BINPATH := $(realpath ../SDK/devkitARM/bin)
 PATH := $(BINPATH):$(PATH)
 
 # --- Project details -------------------------------------------------
 
-PROJ    := gd
-TARGET  := $(PROJ)
+TARGET  := gd
 
-OBJS    := $(PROJ).o
+OBJS    := $(TARGET).o
+LIBS_S  := $(wildcard h/sources/*.cpp)
+LIBS_B  := $(addprefix h/bin/, $(notdir $(LIBS_S)))
+LIBS_B  := $(LIBS_B:.cpp=.o)
 
 # --- Build defines ---------------------------------------------------
 
 PREFIX  := arm-none-eabi-
-CC      := $(PREFIX)gcc
-LD      := $(PREFIX)gcc
-OBJCOPY := $(PREFIX)objcopy
+export CC      := $(PREFIX)gcc
+export LD      := $(PREFIX)gcc
+export OBJCOPY := $(PREFIX)objcopy
 
 ARCH    := -mthumb-interwork -mthumb
 SPECS   := -specs=gba.specs
 
-CFLAGS  := $(ARCH) -Wall -fno-strict-aliasing
-LDFLAGS := $(ARCH) $(SPECS)
+export CFLAGS  := $(ARCH) -Wall -fno-strict-aliasing
+export LDFLAGS := $(ARCH) $(SPECS)
 
 
-.PHONY : build clean
+.PHONY : build clean libs
 
 # --- Build -----------------------------------------------------------
 # Build process starts here!
-build: $(TARGET).gba 
+
+build: $(TARGET).gba
 
 # Strip and fix header (step 3,4)
 $(TARGET).gba : $(TARGET).elf
@@ -35,8 +37,11 @@ $(TARGET).gba : $(TARGET).elf
 	-@gbafix $@
 
 # Link (step 2)
-$(TARGET).elf : $(OBJS)
+$(TARGET).elf : $(OBJS) $(LIBS_B)
 	$(LD) $^ $(LDFLAGS) -o $@
+
+$(LIBS_B): $(LIBS_S)
+	make libs
 
 # Compile (step 1)
 $(OBJS) : %.o : %.cpp $(wildcard h/*)
@@ -49,4 +54,7 @@ clean :
 	@rm -fv *.elf
 	@rm -fv *.o
 
+#---- Compile libraries ------------------------------------
+libs:
+	cd h && $(MAKE)
 #EOF

@@ -32,8 +32,8 @@
 int main(){
   //+ ++++++ Variabili ++++++ +//
   //+ Uso generale +//
-  int i, j, k, ii;                //Indici nei cicli
-  int tmp, tmp1, tmp2;            //Usate per valori temporanei nei calcoli
+  int i, j;                //Indici nei cicli
+  int tmp, tmp1;            //Usate per valori temporanei nei calcoli
   int counter=0;                  //contatore(utilizzato per bg ma volendo anche ad uso generale)
   int levelcounter = 0;           //contatore(utilizzato nello scorrimento del livello)
   
@@ -235,9 +235,9 @@ int main(){
 
     //+ Disegno +//
     WaitForVsync();
-    UpdateBackground(&level);
-    UpdateBackground(&background);
-    UpdateBackground(&text);
+    UpdateBackground(level);
+    UpdateBackground(background);
+    UpdateBackground(text);
     DMA_copy(level0tmp,level.mapData,1024,DMA_ENABLE);
     CopyOAM();
     
@@ -268,25 +268,25 @@ int main(){
         sleep(512);
         text.priority = 3;
         WaitForVsync();
-        UpdateBackground(&text);
+        UpdateBackground(text);
         sleep(512);
         text.priority = 0;
         WaitForVsync();
-        UpdateBackground(&text);
+        UpdateBackground(text);
       }
       WaitForVsync();
       DMA_copy(go_map, text.mapData, 1024, DMA_ENABLE);
       sleep(720);
       text.priority = 3;
       WaitForVsync();
-      UpdateBackground(&text);
+      UpdateBackground(text);
     }
   }
 
   WaitForVsync();
   DMA_copy((you_win?you_win_map:you_lose_map), text.mapData, 1024, DMA_ENABLE);
   text.priority = 0;
-  UpdateBackground(&text);
+  UpdateBackground(text);
 
   while(true);
   return 0;

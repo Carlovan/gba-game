@@ -7,7 +7,7 @@ u16* BGPaletteMem  =  (u16*)0x5000000;
 u16* OBJPaletteMem =  (u16*)0x5000200;
 
 //Wait for the screen to stop drawing
-INLINE void WaitForVsync()
+void WaitForVsync()
 {
 	while((volatile u16)REG_VCOUNT != 160);
 }

@@ -19,6 +19,6 @@
 #define KEY_R          0x100
 #define KEY_L          0x200
 
-INLINE bool CheckPressed(u16 key);
+bool CheckPressed(u16 key);
 
 #endif
