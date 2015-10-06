@@ -1,7 +1,9 @@
-/**********************************************\
-*       block0.h                                   *
-*          by dovotos pcx->gba program         *
-/**********************************************/
+////////////////////////////////////////////////
+//      block0.h                              //
+//         by dovotos pcx->gba program        //
+//      Image data for the blocks in          //
+//         the level                          //
+////////////////////////////////////////////////
 #define  blocks_WIDTH   16
 #define  blocks_HEIGHT  24
 

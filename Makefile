@@ -6,8 +6,8 @@ PATH := $(BINPATH):$(PATH)
 TARGET  := gd
 
 OBJS    := $(TARGET).o
-LIBS_S  := $(wildcard h/sources/*.cpp)
-LIBS_B  := $(addprefix h/bin/, $(notdir $(LIBS_S)))
+LIBS_S  := $(wildcard libs/sources/*.cpp)
+LIBS_B  := $(addprefix libs/bin/, $(notdir $(LIBS_S)))
 LIBS_B  := $(LIBS_B:.cpp=.o)
 
 # --- Build defines ---------------------------------------------------
@@ -56,5 +56,5 @@ clean :
 
 #---- Compile libraries ------------------------------------
 libs:
-	cd h && $(MAKE)
+	cd libs && $(MAKE)
 #EOF

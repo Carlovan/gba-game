@@ -6,36 +6,32 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include <math.h>
-#include "h/gba.h"                                                          //registri GBA e definizioni generiche
-#include "h/sincos.h"                                                       //Tabella seno e coseno
-#include "h/keypad.h"                                                       //registri dei bottoni
-#include "h/dispcnt.h"                                                      //define per il REG_DISPCNT
-#include "h/spr.h"                                                          //funzioni e tipi utili per gestione sprites
-#include "h/bg.h"                                                           //background useful functions and types
-//Sprites
-#include "h/character.h"                                                    //character sprite
-#include "h/blocks.h"                                                       //block number 1
-#include "h/palette.h"                                                      //palette(sprites)
-//Backgrounds
-#include "h/tiles0.h"                                                       //first(last?) set of tiles used
-#include "c/map.c"                                                          //background map(using tiles0)
-#include "c/ready_map.c"
-#include "c/go_map.c"
-#include "c/you_lose_map.c"
-#include "c/you_win_map.c"
-//Others
-#include "h/level.h"
 #include <string.h>
+#include "libs/gba.h"                                                       //Registri GBA e definizioni generiche
+#include "libs/sincos.h"                                                    //Tabella seno e coseno
+#include "libs/keypad.h"                                                    //Utility per i pulsanti
+#include "libs/dispcnt.h"                                                   //Define per il REG_DISPCNT
+#include "libs/spr.h"                                                       //Utility per la gestione degli sprites
+#include "libs/bg.h"                                                        //utility per la gestione dei background
+//Images data
+#include "images/images.h"
+//Backgrounds maps
+#include "maps/map.h"
+#include "maps/ready_map.h"
+#include "maps/go_map.h"
+#include "maps/you_lose_map.h"
+#include "maps/you_win_map.h"
+#include "maps/level.h"
 
 
 
 int main(){
   //+ ++++++ Variabili ++++++ +//
   //+ Uso generale +//
-  int i, j;                //Indici nei cicli
-  int tmp, tmp1;            //Usate per valori temporanei nei calcoli
-  int counter=0;                  //contatore(utilizzato per bg ma volendo anche ad uso generale)
-  int levelcounter = 0;           //contatore(utilizzato nello scorrimento del livello)
+  int i, j;                                                                 //Indici nei cicli
+  int tmp, tmp1;                                                            //Usate per valori temporanei nei calcoli
+  int counter=0;                                                            //contatore(utilizzato per bg ma volendo anche ad uso generale)
+  int levelcounter = 0;                                                     //contatore(utilizzato nello scorrimento del livello)
   
   //+ Background +//
   Bg background;
@@ -66,25 +62,25 @@ int main(){
   level.priority = 2;
 
   //+ Personaggio +//
-  Sprite Character;               //L'oggetto per gestire il personaggio
-  int CharC, CharR;               //Colonna e riga del personaggio nella matrice del livello
-  bool CharTopColl = 0;           //Collisione sopra
-  bool CharRightColl = 0;         //a destra
-  bool CharBotColl = 0;           //e in basso
+  Sprite Character;                                    //L'oggetto per gestire il personaggio
+  int CharCol, CharRow;                                //Colonna e riga del personaggio nella matrice del livello
+  bool CharTopColl = 0;                                //Collisione sopra
+  bool CharRightColl = 0;                              //a destra
+  bool CharBotColl = 0;                                //e in basso
   int CharRotation = 0;
-  FIXED VSpeed = 0;               //Velocita verticale (px/sec). Fixed-point: fattore 2^16 (0X100 = 1)
-  const FIXED GRAVITY = 0x50;     //Valore da aggiungere alla velocita verticale per ogni frame
-  const FIXED JUMP = -0x600;      //Velocita verticale quando salta
+  FIXED VSpeed = 0;                                    //Velocita verticale (px/sec). Fixed-point: fattore 2^16 (0X100 = 1)
+  const FIXED GRAVITY = 0x50;                          //Valore da aggiungere alla velocita verticale per ogni frame
+  const FIXED JUMP = -0x600;                           //Velocita verticale quando salta
   const int ROT_ANGLE = 3;
 
   //+ Loop +//
-  bool first = true;                //True se è la prima iterazione del main loop
+  bool first = true;                                   //True se è la prima iterazione del main loop
   bool you_win = 0;
   int GridShift = 0;
 
 
   //+ ++++++ Inizializzazione ++++++ +//
-  SetMode(MODE_0 | OBJ_ENABLE | OBJ_MAP_1D);    //Imposta le modalità di utilizzo
+  SetMode(MODE_0 | OBJ_ENABLE | OBJ_MAP_1D);          //Imposta le modalità di utilizzo
   InitializeSprites();
 
   DMA_copy(palette, OBJPaletteMem, 256, DMA_ENABLE);  //Carica in memoria la palette degli sprites usando il DMA
@@ -94,42 +90,42 @@ int main(){
   EnableBackground(&text);
   EnableBackground(&level);
 
-  DMA_copy(tiles0Palette, BGPaletteMem, 256, DMA_ENABLE);       //Carica la palette dei background
+  DMA_copy(tiles0Palette, BGPaletteMem, 256, DMA_ENABLE);                               //Carica la palette dei background
   DMA_copy(tiles0Data, background.tileData, tiles0_WIDTH*tiles0_HEIGHT/2, DMA_ENABLE);
   DMA_copy(blocksData, level.tileData, blocks_WIDTH*blocks_HEIGHT/2, DMA_ENABLE);
-  DMA_copy(map, background.mapData, 1024, DMA_ENABLE);   //Mappa della disposizione dei tiles
+  DMA_copy(map, background.mapData, 1024, DMA_ENABLE);                                  //Mappa della disposizione dei tiles
   DMA_copy(ready_map, text.mapData, 1024, DMA_ENABLE);
 
   //+ ++++++ Creazione Sprites ++++++ +//
   //+ Personaggio +//
-  Character.x = 100;                           //Imposta le caratteristiche dell'oggetto
+  Character.x = 100;                                                                    //Imposta le caratteristiche dell'oggetto
   Character.y = 60;
   Character.w = character_WIDTH;
   Character.h = character_HEIGHT/4;
   Character.index = 127;
   Character.activeFrame = 0;
   Character.rotData = 0;
-  for(i = 0; i < 4; i++)                       //Imposta la posizione dei frame dell'animazione
+  for(i = 0; i < 4; i++)                                                               //Imposta la posizione dei frame dell'animazione
     Character.spriteFrame[i] = i*8;
 
-  tmp = Character.index;                      //Imposta attributi dello sprite nella memoria
+  tmp = Character.index;                                                               //Imposta attributi dello sprite nella memoria
   sprites[tmp].attribute0 = COLOR_256 | SQUARE | Character.y | ROTATION_FLAG | SIZE_DOUBLE;
   sprites[tmp].attribute1 = SIZE_16 | Character.x | ROTDATA(Character.rotData);
   sprites[tmp].attribute2 = 0 | PRIORITY(1);
   RotateSprite(Character.rotData, 0, 1, 1);
 
-  tmp1 = character_WIDTH * character_HEIGHT / 2;       //Dimensione del BMP in memoria
-  DMA_copy(characterData, OAMData, tmp1, DMA_ENABLE);  //Carica l'immagine in memoria
+  tmp1 = character_WIDTH * character_HEIGHT / 2;                                       //Dimensione del BMP in memoria
+  DMA_copy(characterData, OAMData, tmp1, DMA_ENABLE);                                  //Carica l'immagine in memoria
 
   //+ Livello +//
-  int blockTypes[][4] = {{0x02,0x03,0x04,0x05,},};     //Matrice dei tile dei blocchi
+  int blockTypes[][4] = {{0x02,0x03,0x04,0x05,},};                                     //Matrice dei tile dei blocchi
   
-  s16 level0tmp[32*32];                   //Mappa dei tile temporanea
-  for(j = 0; j<32; j+=2)                  //Scorro la matrice del livello
+  s16 level0tmp[32*32];                                                                //Mappa dei tile temporanea
+  for(j = 0; j<32; j+=2)                                                               //Scorro la matrice del livello
   {
     for(i = 0; i<20; i+=2)
     {
-      if(level0[i/2][j/2]==-1)            //Se trovo -1(spazio vuoto) sovrascrivo con un tile vuoto
+      if(level0[i/2][j/2]==-1)                                                         //Se trovo -1(spazio vuoto ) sovrascrivo con un tile vuoto
       {
         level0tmp[j+i*32] = 0x00;
         level0tmp[j+i*32+1] = 0x00;
@@ -137,7 +133,7 @@ int main(){
         level0tmp[j+(1+i)*32+1] = 0x00;
         
       }
-      else                                //Altrimenti attingo alla matrice dei blocchi
+      else                                                                             //Altrimenti attingo alla matrice dei blocchi
       {
         level0tmp[j+i*32] = blockTypes[level0[i/2][j/2]][0];
         level0tmp[j+i*32+1] = blockTypes[level0[i/2][j/2]][1];
@@ -147,21 +143,21 @@ int main(){
       }
     }
   }
-  DMA_copy(level0tmp,level.mapData,1024,DMA_ENABLE);            //Aggiorno la mappa del livello
+  DMA_copy(level0tmp,level.mapData,1024,DMA_ENABLE);                                   //Aggiorno la mappa del livello
 
   //+ ++++++ Loop principale ++++++ +//
   while(true){
     //+ Personaggio +//
-    Character.y += (VSpeed >= 0 ? (VSpeed>>8) : -((-VSpeed)>>8));                 //Aggiorno la coordinata verticale
+    Character.y += (VSpeed >= 0 ? (VSpeed>>8) : -((-VSpeed)>>8));                     //Aggiorno la coordinata verticale
     CharRotation += ROT_ANGLE;
     if(CharRotation >= 360) CharRotation -= 360;
 
-    CharR = (Character.y + Character.h/2) / 16; //Riga e colonne nella matrice
-    CharC = (Character.x + GridShift + Character.w/2) / 16;
+    CharRow = (Character.y + Character.h/2) / 16;                                     //Riga e colonne nella matrice
+    CharCol = (Character.x + GridShift + Character.w/2) / 16;
 
-    tmp = (Character.x>CharC*16?1:-1);          //Controlla le collisioni vericali
-    CharBotColl = (CharR < 9 && CharC < lev0Width && (level0[CharR+1][CharC] > -1 || level0[CharR+1][CharC+tmp] > -1) && Character.y >= 16 * CharR);
-    CharTopColl = (CharC < lev0Width && (level0[CharR-1][CharC] > -1 || level0[CharR-1][CharC+tmp] > -1) && Character.y <  16 * CharR);
+    tmp = (Character.x>CharCol*16?1:-1);                                              //Controlla le collisioni vericali
+    CharBotColl = (CharRow < 9 && CharCol < lev0Width && (level0[CharRow+1][CharCol] > -1 || level0[CharRow+1][CharCol+tmp] > -1) && Character.y >= 16 * CharRow);
+    CharTopColl = (CharCol < lev0Width && (level0[CharRow-1][CharCol] > -1 || level0[CharRow-1][CharCol+tmp] > -1) && Character.y <  16 * CharRow);
 
     if(CharTopColl || CharBotColl){
       for(tmp = CharRotation; tmp >= 90; tmp -= 90);
@@ -174,12 +170,12 @@ int main(){
 
     if(CharTopColl){
       VSpeed = 0;
-      Character.y = CharR * 16;
+      Character.y = CharRow * 16;
     }
 
     if(CharBotColl){
       VSpeed = 0;
-      Character.y = CharR * 16;
+      Character.y = CharRow * 16;
     }else{
       VSpeed += GRAVITY;
     }
@@ -188,18 +184,18 @@ int main(){
       VSpeed = JUMP;
 
     //Calcolo della collisione orizzontale
-    tmp = (Character.y > CharR * 16 ? 1 : (Character.y < CharR * 16 ? -1 : 0));
-    CharRightColl = (CharC < lev0Width && (level0[CharR][CharC+1] > -1 || level0[CharR+tmp][CharC+1] > -1) && Character.x + GridShift >= CharC * 16);
+    tmp = (Character.y > CharRow * 16 ? 1 : (Character.y < CharRow * 16 ? -1 : 0));
+    CharRightColl = (CharCol < lev0Width && (level0[CharRow][CharCol+1] > -1 || level0[CharRow+tmp][CharCol+1] > -1) && Character.x + GridShift >= CharCol * 16);
     MoveSprite(Character , -Character.w/2, -Character.h/2);                     //Scrivo le modifiche nella memoria
 
 
     //+ Livello +//
     GridShift += 2;
     level.x_scroll=GridShift;
-    if(GridShift%16 == 0)                           //Se una fila di blocchi è uscita dallo schermo
+    if(GridShift%16 == 0)                                                      //Se una fila di blocchi è uscita dallo schermo
     {
       
-      for(i = 0;i<20;i+=2)                          //La sovrascrivo con una nuova
+      for(i = 0;i<20;i+=2)                                                     //La sovrascrivo con una nuova
       {
         if(level0[i/2][15+GridShift/16]==-1)
         {
@@ -225,7 +221,7 @@ int main(){
     
     //Gestione movimento background
     counter++;
-    if(counter%4 == 0)                  //Muove gradualmente il bg
+    if(counter%4 == 0)                      //Muove gradualmente il bg
     {
       background.x_scroll++;
     }
@@ -241,7 +237,7 @@ int main(){
     DMA_copy(level0tmp,level.mapData,1024,DMA_ENABLE);
     CopyOAM();
     
-    if(CharC > lev0Width || CharR >= 10){
+    if(CharCol > lev0Width || CharRow >= 10){
       you_win = 1;
       break;
     }
