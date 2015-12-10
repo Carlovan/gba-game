@@ -24,6 +24,43 @@
 #include "maps/level.h"
 
 
+int GridShift = 0; 
+
+inline int calcCharRow(Sprite s){
+	return (s.y + s.h/2) / 16;
+}
+
+inline int calcCharCol(Sprite s){
+	return (s.x + GridShift + s.w/2) / 16;
+}
+
+inline bool checkTopCollision(Sprite s){
+	int CharCol = calcCharCol(s);
+	int CharRow = calcCharRow(s);
+	int tmp = (s.x>CharCol*16?1:-1);
+	if(s.y >= 0)
+    	return (CharCol < lev0Width && (level0[CharRow-1][CharCol] > -1 || level0[CharRow-1][CharCol+tmp] > -1) && s.y <  16 * CharRow);
+    else
+    	return false;
+}
+
+inline bool checkBottomCollision(Sprite s){
+	int CharCol = calcCharCol(s);
+	int CharRow = calcCharRow(s);
+	int tmp = (s.x>CharCol*16?1:-1);
+	return (CharRow < 9 && CharCol < lev0Width && (level0[CharRow+1][CharCol] > -1 || level0[CharRow+1][CharCol+tmp] > -1) && s.y >= 16 * CharRow);
+}
+
+inline bool checkRightCollision(Sprite s){
+	int CharCol = calcCharCol(s);
+	int CharRow = calcCharRow(s);
+
+	int tmp = (s.y > CharRow * 16 ? 1 : (s.y < CharRow * 16 ? -1 : 0));
+    if(s.y >= 0)
+	    return (CharCol < lev0Width && (level0[CharRow][CharCol+1] > -1 || level0[CharRow+tmp][CharCol+1] > -1) && s.x + GridShift >= CharCol * 16);
+	else
+		return false;
+}                                                         //Pixel di cui è spostata la griglia di gioco
 
 int main(){
   //+ ++++++ Variabili ++++++ +//
@@ -76,7 +113,6 @@ int main(){
   //+ Loop +//
   bool first = true;                                   //True se è la prima iterazione del main loop
   bool you_win = 0;
-  int GridShift = 0;
 
 
   //+ ++++++ Inizializzazione ++++++ +//
@@ -152,16 +188,12 @@ int main(){
     CharRotation += ROT_ANGLE;
     if(CharRotation >= 360) CharRotation -= 360;
 
-    CharRow = (Character.y + Character.h/2) / 16;                                     //Riga e colonne nella matrice
-    CharCol = (Character.x + GridShift + Character.w/2) / 16;
+    CharRow = calcCharRow(Character);                                                 //Riga e colonne nella matrice
+    CharCol = calcCharCol(Character);
 
-    tmp = (Character.x>CharCol*16?1:-1);                                              //Controlla le collisioni vericali
-    CharBotColl = (CharRow < 9 && CharCol < lev0Width && (level0[CharRow+1][CharCol] > -1 || level0[CharRow+1][CharCol+tmp] > -1) && Character.y >= 16 * CharRow);
-    //Controlla se il player è fuori dallo schermos
-    if(Character.y >= 0)
-    	CharTopColl = (CharCol < lev0Width && (level0[CharRow-1][CharCol] > -1 || level0[CharRow-1][CharCol+tmp] > -1) && Character.y <  16 * CharRow);
-    else
-    	CharTopColl = false;
+    //Controlla le collisioni vericali
+    CharBotColl = checkBottomCollision(Character);
+    CharTopColl = checkTopCollision(Character);
 
     if(CharTopColl || CharBotColl){
       for(tmp = CharRotation; tmp >= 90; tmp -= 90);
@@ -188,12 +220,9 @@ int main(){
       VSpeed = JUMP;
 
     //Calcolo della collisione orizzontale
-    tmp = (Character.y > CharRow * 16 ? 1 : (Character.y < CharRow * 16 ? -1 : 0));
-    if(Character.y >= 0)
-	    CharRightColl = (CharCol < lev0Width && (level0[CharRow][CharCol+1] > -1 || level0[CharRow+tmp][CharCol+1] > -1) && Character.x + GridShift >= CharCol * 16);
-	else
-		CharRightColl = 0;
+    CharRightColl = checkRightCollision(Character);
     MoveSprite(Character , -Character.w/2, -Character.h/2);                     //Scrivo le modifiche nella memoria
+                                                                                //valori dimezzati perche usata doppia area di rendering
 
 
     //+ Livello +//
