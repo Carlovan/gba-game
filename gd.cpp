@@ -157,7 +157,11 @@ int main(){
 
     tmp = (Character.x>CharCol*16?1:-1);                                              //Controlla le collisioni vericali
     CharBotColl = (CharRow < 9 && CharCol < lev0Width && (level0[CharRow+1][CharCol] > -1 || level0[CharRow+1][CharCol+tmp] > -1) && Character.y >= 16 * CharRow);
-    CharTopColl = (CharCol < lev0Width && (level0[CharRow-1][CharCol] > -1 || level0[CharRow-1][CharCol+tmp] > -1) && Character.y <  16 * CharRow);
+    //Controlla se il player è fuori dallo schermos
+    if(Character.y >= 0)
+    	CharTopColl = (CharCol < lev0Width && (level0[CharRow-1][CharCol] > -1 || level0[CharRow-1][CharCol+tmp] > -1) && Character.y <  16 * CharRow);
+    else
+    	CharTopColl = false;
 
     if(CharTopColl || CharBotColl){
       for(tmp = CharRotation; tmp >= 90; tmp -= 90);
@@ -185,7 +189,10 @@ int main(){
 
     //Calcolo della collisione orizzontale
     tmp = (Character.y > CharRow * 16 ? 1 : (Character.y < CharRow * 16 ? -1 : 0));
-    CharRightColl = (CharCol < lev0Width && (level0[CharRow][CharCol+1] > -1 || level0[CharRow+tmp][CharCol+1] > -1) && Character.x + GridShift >= CharCol * 16);
+    if(Character.y >= 0)
+	    CharRightColl = (CharCol < lev0Width && (level0[CharRow][CharCol+1] > -1 || level0[CharRow+tmp][CharCol+1] > -1) && Character.x + GridShift >= CharCol * 16);
+	else
+		CharRightColl = 0;
     MoveSprite(Character , -Character.w/2, -Character.h/2);                     //Scrivo le modifiche nella memoria
 
 
