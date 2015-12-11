@@ -12,26 +12,29 @@
 #define RGB16_BGR(r, g, b)  ((r)+(g<<5)+(b<<10))
 
 //attribute0 #defines
-#define ROTATION_FLAG       0x100
-#define SIZE_DOUBLE         0x200
-#define MODE_NORMAL         0x0
-#define MODE_TRANSPARENT    0x400
-#define MODE_WINDOWED       0x800
-#define MOSAIC              0x1000
-#define COLOR_16            0x0000
-#define COLOR_256           0x2000
-#define SQUARE              0x0
-#define TALL                0x4000
-#define WIDE                0x8000
+struct SPR_ATTR0{
+	static const int ROTATION         = 0x100;
+	static const int SIZE_DOUBLE      = 0x200;
+	static const int MODE_NORMAL      = 0x0;
+	static const int MODE_TRANSPARENT = 0x400;
+	static const int MOSAIC           = 0x1000;
+	static const int COLOR16          = 0x0;
+	static const int COLOR256         = 0x2000;
+	static const int SQUARE           = 0x0;
+	static const int TALL             = 0x4000;
+	static const int WIDE             = 0x8000;
+};
 
 //attribute1 #defines
+struct SPR_ATTR1{
+	static const int HORIZONTAL_FLIP = 0x1000;
+	static const int VERTICAL_FLIP   = 0x2000;
+	static const int SIZE8           = 0x0;
+	static const int SIZE16          = 0x4000;
+	static const int SIZE32          = 0x8000;
+	static const int SIZE64          = 0xC000;
+};
 #define ROTDATA(n)          ((n)<<9)
-#define HORIZONTAL_FLIP     0x1000
-#define VERTICAL_FLIP       0x2000
-#define SIZE_8              0x0
-#define SIZE_16             0x4000
-#define SIZE_32             0x8000
-#define SIZE_64             0xC000
 
 //atrribute2 #defines
 #define PRIORITY(n)         ((n)<<10)

@@ -2,23 +2,25 @@
 #define BG_H
 
 //BGCNT defines
-#define BG_MOSAIC_ENABLE      0x40
-#define BG_COLOR_256          0x80
-#define BG_COLOR_16           0x0
+struct BG_CONTROL{
+	static const int ENABLE_MOSAIC         = 0x40;
+  	static const int COLOR256              = 0x80;
+  	static const int COLOR16               = 0x0;
 
-#define CHAR_SHIFT            0x2
-#define SCREEN_SHIFT          0x8
-#define TEXTBG_SIZE_256x256   0x0
-#define TEXTBG_SIZE_256x512   0x8000
-#define TEXTBG_SIZE_512x256   0x4000
-#define TEXTBG_SIZE_512x512   0xC000
+	static const int CHAR_SHIFT            = 0x2;
+	static const int SCREEN_SHIFT          = 0x8;
+	static const int TEXTBG_SIZE_256x256   = 0x0;
+	static const int TEXTBG_SIZE_256x512   = 0x8000;
+	static const int TEXTBG_SIZE_512x256   = 0x4000;
+	static const int TEXTBG_SIZE_512x512   = 0xC000;
 
-#define ROTBG_SIZE_128x128    0x0
-#define ROTBG_SIZE_256x256    0x4000
-#define ROTBG_SIZE_512x512    0x8000
-#define ROTBG_SIZE_1024x1024  0xC000
+	static const int ROTBG_SIZE_128x128    = 0x0;
+	static const int ROTBG_SIZE_256x256    = 0x4000;
+	static const int ROTBG_SIZE_512x512    = 0x8000;
+	static const int ROTBG_SIZE_1024x1024  = 0xC000;
 
-#define BG_WRAP               0x200
+	static const int WRAP                  = 0x200;
+};
 
 #define CharBaseBlock(n)      (((n)*0x4000)+0x6000000)
 #define ScreenBaseBlock(n)    (((n)*0x800)+0x6000000)

@@ -76,8 +76,8 @@ int main(){
   background.number = 0;
   background.charBaseBlock = 0;
   background.screenBaseBlock = 31;
-  background.colorMode = BG_COLOR_256;
-  background.size = TEXTBG_SIZE_256x256;
+  background.colorMode = BG_CONTROL::COLOR256;
+  background.size = BG_CONTROL::TEXTBG_SIZE_256x256;
   background.priority = 3;
 
   Bg text;
@@ -85,8 +85,8 @@ int main(){
   text.number = 1;
   text.charBaseBlock = 0;
   text.screenBaseBlock = 30;
-  text.colorMode = BG_COLOR_256;
-  text.size = TEXTBG_SIZE_256x256;
+  text.colorMode = BG_CONTROL::COLOR256;
+  text.size = BG_CONTROL::TEXTBG_SIZE_256x256;
   text.priority = 0;
   
   Bg level;
@@ -94,10 +94,10 @@ int main(){
   level.number = 2;
   level.charBaseBlock = 1;
   level.screenBaseBlock = 29;
-  level.colorMode = BG_COLOR_256;
-  level.size = TEXTBG_SIZE_256x256;
+  level.colorMode = BG_CONTROL::COLOR256;
+  level.size = BG_CONTROL::TEXTBG_SIZE_256x256;
   level.priority = 2;
-
+ 
   //+ Personaggio +//
   Sprite Character;                                    //L'oggetto per gestire il personaggio
   int CharCol, CharRow;                                //Colonna e riga del personaggio nella matrice del livello
@@ -145,8 +145,8 @@ int main(){
     Character.spriteFrame[i] = i*8;
 
   tmp = Character.index;                                                               //Imposta attributi dello sprite nella memoria
-  sprites[tmp].attribute0 = COLOR_256 | SQUARE | Character.y | ROTATION_FLAG | SIZE_DOUBLE;
-  sprites[tmp].attribute1 = SIZE_16 | Character.x | ROTDATA(Character.rotData);
+  sprites[tmp].attribute0 = SPR_ATTR0::COLOR256 | SPR_ATTR0::SQUARE | Character.y | SPR_ATTR0::ROTATION | SPR_ATTR0::SIZE_DOUBLE;
+  sprites[tmp].attribute1 = SPR_ATTR1::SIZE16 | Character.x | ROTDATA(Character.rotData);
   sprites[tmp].attribute2 = 0 | PRIORITY(1);
   RotateSprite(Character.rotData, 0, 1, 1);
 

@@ -37,8 +37,8 @@ $(TARGET).gba : $(TARGET).elf
 	-@gbafix $@
 
 # Link (step 2)
-$(TARGET).elf : $(OBJS) $(LIBS_B)
-	$(LD) $^ $(LDFLAGS) -o $@
+$(TARGET).elf : $(OBJS)
+	$(LD) $^ $(LIBS_B) $(LDFLAGS) -o $@
 
 $(LIBS_B): $(LIBS_S)
 	make libs

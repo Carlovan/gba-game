@@ -10,7 +10,7 @@ void EnableBackground(Bg* bg)
 
 	bg->tileData = (u16*)CharBaseBlock((u64)(bg->charBaseBlock));
 	bg->mapData = (u16*)ScreenBaseBlock((u64)(bg->screenBaseBlock));
-	temp = bg->size | (bg->charBaseBlock<<CHAR_SHIFT) | (bg->screenBaseBlock<<SCREEN_SHIFT)
+	temp = bg->size | (bg->charBaseBlock<<BG_CONTROL::CHAR_SHIFT) | (bg->screenBaseBlock<<BG_CONTROL::SCREEN_SHIFT)
 		| bg->colorMode | bg->mosaic | bg->wraparound;
 
 	switch(bg->number)
