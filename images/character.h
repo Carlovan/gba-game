@@ -1,7 +1,7 @@
-/**********************************************\
-*       character.h                                   *
-*          by dovotos pcx->gba program         *
-/**********************************************/
+////////////////////////////////////////////////
+//       character.h                          //
+//          by dovotos pcx->gba program       //
+////////////////////////////////////////////////
 #define  character_WIDTH   16
 #define  character_HEIGHT  64
 
