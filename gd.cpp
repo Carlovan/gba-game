@@ -12,7 +12,7 @@
 #include "libs/keypad.h"                                                    //Utility per i pulsanti
 #include "libs/dispcnt.h"                                                   //Define per il REG_DISPCNT
 #include "libs/spr.h"                                                       //Utility per la gestione degli sprites
-#include "libs/bg.h"                                                        //utility per la gestione dei background
+#include "libs/backgrounds.h"                                               //utility per la gestione dei background
 //Images data
 #include "images/images.h"
 //Backgrounds maps

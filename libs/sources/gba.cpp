@@ -20,7 +20,7 @@ void DMA_copy(const void* source, void* dest, u32 count, u32 mode){
 	REG_DM3CNT = count | mode;
 }
 
-//Mette in pausa ils programma per ms 1024esimi di secondo
+//Mette in pausa il programma per ms 1024esimi di secondo
 void sleep(int ms){
 	int counter = 0;
 	int prev = 0;
