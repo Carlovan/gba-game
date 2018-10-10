@@ -1,1 +1,3 @@
-# GBA Geometry Dash\n
+# GBA Geometry Dash
+
+Awesome GameBoy Advance game inspired to Geometry Dash
